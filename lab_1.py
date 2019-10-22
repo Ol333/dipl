@@ -3,6 +3,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import numexpr as ne
+import sys
 
 def save(name='', folder='', fmt='png'):
     pwd = os.getcwd()
@@ -15,8 +16,10 @@ def save(name='', folder='', fmt='png'):
     #plt.close()
 
 array=[] #считываем параметры
-with  open('parametres.txt', 'r') as f:
-    array = [row.strip().split('"')[1] for row in f]
+# with  open('parametres.txt', 'r') as f:
+#     array = [row.strip().split('"')[1] for row in f]
+array = sys.argv
+array.remove(array[0])
 array = list(map(float,array))
 
 x = [array[0],array[1],array[2]]
@@ -32,14 +35,14 @@ while abs(x[1]**(-x[1])+x[1]*x[1]-3)>array[3]:
     k += 1
     a = (y[2]-y[0]-((y[1]-y[0])*(x[2]-x[0])/(x[1]-x[0])))/(x[2]*x[2]-x[0]*x[0]+((x[0]*x[0]-x[1]*x[1])*(x[2]-x[0])/(x[1]-x[0])))
     b = (y[1]-a*x[1]*x[1]+a*x[0]*x[0]-y[0])/(x[1]-x[0])
-    c = y[0]-a*x[0]*x[0]-b*x[0]    
+    c = y[0]-a*x[0]*x[0]-b*x[0]
 
     d = b*b-4*a*c
     if (d<0):
         print('нет корней', x,y)
         break
     elif (d==0):
-        x.append((-1)*b / (2*a)) 
+        x.append((-1)*b / (2*a))
         x.remove(x[0])
     else:
         x1 = ((-1)*b + math.sqrt(d)) / (2*a)
@@ -53,7 +56,7 @@ while abs(x[1]**(-x[1])+x[1]*x[1]-3)>array[3]:
     y = list(map(lambda a: a**(-a)+a*a-3,x))
 
     f = 'a*x*x+b*x+c'
-    aa = {'x':xx} 
+    aa = {'x':xx}
     yy = ne.evaluate(f,local_dict=aa)
     fig = plt.figure()
     li.append((xx,yy))
