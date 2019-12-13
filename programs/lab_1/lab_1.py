@@ -1,3 +1,4 @@
+## -*- coding: utf-8 -*-
 import os
 import math
 import matplotlib.pyplot as plt
@@ -7,6 +8,7 @@ import sys
 
 def save(name='', folder='', fmt='png'):
     pwd = os.getcwd()
+    os.chdir(os.path.join(pwd,"../../"))
     iPath = './pictures/{}/{}'.format(fmt,folder)
     if not os.path.exists(iPath):
         os.mkdir(iPath)
@@ -67,6 +69,7 @@ while abs(x[1]**(-x[1])+x[1]*x[1]-3)>array[3]:
     save(name='{}_{}_{}_{}_{}'.format(*array,k), folder = '{}_{}_{}_{}'.format(*array))
 ##    plt.show()
 
+os.chdir(os.path.join(os.getcwd(),"../../"))
 output = open('./text/{}_{}_{}_{}.txt'.format(*array), 'w')
 output.write('x = '+str(x[1])+'\nsteps = '+str(k)+'\ny = '+str(y[1])+'\naccuracy = '+str(array[3]))
 output.close()
