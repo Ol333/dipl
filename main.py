@@ -7,10 +7,13 @@ import subprocess
 from ui import Ui_Form
 from param import Ui_Form_param
 from PyQt5.QtCore import (QRect, QCoreApplication,pyqtSignal, QObject, Qt)
+from PyQt5.QtGui import QStandardItemModel,QStandardItem
 import os
 import fileinput
 import shutil
 import glob
+import rab_with_db as rwd
+
 
 class Example(Ui_Form, QObject, Ui_Form_param, object):
     numb = 1
@@ -45,6 +48,10 @@ class Example(Ui_Form, QObject, Ui_Form_param, object):
         self.scrollAreaWidgetContents.setLayout(self.lay)
         self.scrollArea.setAlignment(Qt.AlignBottom)
         self.numb += 1
+
+
+
+        self.fill_tree()
 
     def connect_slots(self):
         self.pushButton.clicked.connect(self.execute)
@@ -195,6 +202,27 @@ class Example(Ui_Form, QObject, Ui_Form_param, object):
             self.lay.addWidget(self.gridElementOfInput[self.numb-1][i],self.numb-1,i,1,1)
         self.numb += 1
 
+    def fill_tree(self):
+        model = QStandardItemModel(0, 5, None)
+        # model.setHorizontalHeaderLabels(['id', 'name','path/value','date','time'])
+        model.setHeaderData(0, Qt.Horizontal, "id")
+        model.setHeaderData(1, Qt.Horizontal, "name")
+        model.setHeaderData(2, Qt.Horizontal, "path/value")
+        # model.setHeaderData(3, Qt.Horizontal, "module_id")
+        # model.setHeaderData(6, Qt.Horizontal, "parameter_id")
+        # model.setHeaderData(9, Qt.Horizontal, "value_id")
+        model.setHeaderData(3, Qt.Horizontal, "date")
+        model.setHeaderData(4, Qt.Horizontal, "time")
+        self.treeView.setColumnHidden(0,True)
+        self.treeView.setModel(model)
+
+        proj = rwd.get_table("project")
+        model.appendRow([QStandardItem(str(proj[0][0])),QStandardItem(str(proj[0][1])),
+                        QStandardItem(str(proj[0][2])),QStandardItem(), QStandardItem()])
+        model.appendRow([QStandardItem(str(proj[1][0])),QStandardItem(str(proj[1][1])),
+                        QStandardItem(str(proj[1][2])),QStandardItem(), QStandardItem()])
+
+
 class Param(Ui_Form_param, QObject):
     def __init__(self, form, com):
         super().__init__()
@@ -246,6 +274,5 @@ if __name__ == '__main__':
     ui_param = Param(window_param, com)
     ui = Example(window, com, window_param, ui_param)
     window.show()
-
 
     sys.exit(app.exec_())
