@@ -1,0 +1,4 @@
+dbname = "dipl_db"
+user = "dipl_user"
+password = "dipl"
+host = "localhost"

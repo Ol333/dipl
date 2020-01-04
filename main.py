@@ -2,9 +2,10 @@
 import sys
 from PyQt5.QtWidgets import (QWidget, QPushButton, QLineEdit,
 QGridLayout, QInputDialog, QApplication, QMessageBox, QTextEdit,
-QGroupBox, QScrollArea, QLabel, QHBoxLayout, QMainWindow)
+QGroupBox, QScrollArea, QLabel, QHBoxLayout, QMainWindow,
+QAction, QFileDialog)
 import subprocess
-from ui import Ui_Form
+from ui import Ui_MainWindow
 from param import Ui_Form_param
 from PyQt5.QtCore import (QRect, QCoreApplication,pyqtSignal, QObject, Qt)
 from PyQt5.QtGui import QStandardItemModel,QStandardItem
@@ -15,8 +16,8 @@ import glob
 import rab_with_db as rwd
 
 
-class Example(Ui_Form, QObject, Ui_Form_param, object):
-    numb = 1
+class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
+    numb = 0
     lay = QGridLayout()
     gridElementOfInput = []
     base_addr = None
@@ -32,33 +33,33 @@ class Example(Ui_Form, QObject, Ui_Form_param, object):
         self.form = form1
         self.base_addr = os.getcwd()
 
-        self.gridElementOfInput.append([QLabel(str(self.numb)),QLineEdit(),
-        QPushButton("Add parameters"),QTextEdit(),QLineEdit(),QLineEdit()])
-        self.gridElementOfInput[0][2].clicked.connect(self.buttonClicked_adp)
-        self.gridElementOfInput[0][2].setObjectName("adp0")
-        self.gridElementOfInput[0][1].textChanged.connect(self.textLineEditChange)
-        self.gridElementOfInput[0][2].setEnabled(False)
-        self.gridElementOfInput[0][3].setEnabled(False)
-        self.gridElementOfInput[0][4].setEnabled(False)
-        self.gridElementOfInput[0][5].setEnabled(False)
-        self.gridElementOfInput[0][1].setObjectName("prNam0")
-        for i in range(5):
-            self.lay.addWidget(self.gridElementOfInput[0][i],0,i,1,1)
-        self.lay.addWidget(self.gridElementOfInput[0][5],0,5,1,2)
+        self.buttonClicked_addModule()
         self.scrollAreaWidgetContents.setLayout(self.lay)
         self.scrollArea.setAlignment(Qt.AlignBottom)
-        self.numb += 1
-
-
 
         self.fill_tree()
+
+    def showDialog_createProject(self):
+        qwe1 = QWidget()
+        text1, ok1 = QInputDialog.getText(qwe1, 'new project',
+            'enter new project name:')
+        if ok1:
+            path = QFileDialog.getExistingDirectory(self.form, 'Choose life', '/home')
+            self.label_6.setText(f"project name: {text1}")
+            # for somethinf in path add modules
+            print(str(path))
 
     def connect_slots(self):
         self.pushButton.clicked.connect(self.execute)
         self.pushButton_2.clicked.connect(self.buttonClicked_addModule)
         self.comm.fillParam.connect(self.fillParamLineEdit)
+        self.actionNew_project.triggered.connect(self.showDialog_createProject)
 
     def execute(self):
+        if self.label_6.text() == "project name: ...---...":
+            self.showDialog_createProject()
+        modules_paramValueRes = []
+
         mes = QMessageBox()
         re = ""
         for i in range(len(self.gridElementOfInput)):
@@ -66,6 +67,7 @@ class Example(Ui_Form, QObject, Ui_Form_param, object):
                 module_name = self.gridElementOfInput[i][1].text()
                 path = self.base_addr
                 path = os.path.join(path,"programs",module_name)
+                modules_paramValueRes.append([module_name,path,[]])
                 os.chdir(path)                                   # меняем директорию
                 if os.path.exists('makefile'):
                     # изменить док
@@ -74,51 +76,53 @@ class Example(Ui_Form, QObject, Ui_Form_param, object):
                     for j in range(len(masChange)):
                         masChange[j] = masChange[j].split('>')
 
+                    # создаем копию если ее нет, если она есть обращаемся к ней
                     if os.path.exists('makefile.bak'):
                         path = os.path.join(path,"makefile.bak")
-                        s = ""
                         f = open(path,"r")
-                        for line in f:
-                            s += line.replace(masChange[counter][0].strip(), masChange[counter][1].strip())
-                            if counter+1 != len(masChange):
-                                counter += 1
-                        f.close()
-                        f = open(path[:-4],"w")
-                        f.write(s)
-                        f.close()
+                        path = path[:-4]
                     else:
                         path = os.path.join(path,"makefile")
                         shutil.copyfile(path, path + '.bak')
-                        s = ""
                         f = open(path,"r")
-                        for line in f:
-                            s += line.replace(masChange[counter][0].strip(), masChange[counter][1].strip())
-                            if counter+1 != len(masChange):
-                                counter += 1
-                        f.close()
-                        f = open(path,"w")
-                        f.write(s)
-                        f.close()
+                    s = ""
+                    for line in f:
+                        s += line.replace(masChange[counter][0].strip(), masChange[counter][1].strip())
+                        if counter+1 != len(masChange):
+                            modules_paramValueRes[-1][-1].append(masChange[counter][1].strip())
+                            counter += 1
+                    f.close()
+                    f = open(path,"w")
+                    f.write(s)
+                    f.close()
 
                     # запустить
+                    loc_re = ""
                     re += "\n №" + str(i)
-                    re += str(subprocess.run('make'))+"\n"
-                    re += str(subprocess.run("./" + module_name))+"\n"
+                    loc_re += str(subprocess.run('make'))+"\n"
+                    loc_re += str(subprocess.run("./" + module_name))+"\n"
+                    modules_paramValueRes[-1].append(loc_re)
+                    re += loc_re
                 else:
+                    loc_re = ""
                     re += "\n №" + str(i)
                     ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
                     ar.extend(self.gridElementOfInput[i][3].toPlainText().split(' '))
-                    re += str(subprocess.run(ar))+"\n"
+                    loc_re += str(subprocess.run(ar))+"\n"
+                    modules_paramValueRes[-1].append(loc_re)
+                    re += loc_re
 
         mes.setText(str(re))
         mes.exec_()
-        # #удалять все .bak
+        # удалять все .bak
         for file in glob.glob("*.bak"):
-            print(file)
             src = file
             dst = file[:-4]
             shutil.copyfile(src, dst)
             os.remove(file)
+
+        # db project modules parametres values results
+        rwd.add_([self.label_6.text().split(":")[1].strip(),self.base_addr],modules_paramValueRes)
 
     def buttonClicked_del(self):
         mb = QMessageBox()
@@ -158,7 +162,8 @@ class Example(Ui_Form, QObject, Ui_Form_param, object):
             for line in f:
                 if line.find("=") != -1:
                     line = line.split('=')
-                    outText.append([line[0].strip(),line[1].strip()])
+                    if line[0][:2]=="V_":
+                        outText.append([line[0].strip(),line[1].strip()])
             self.window_param.show()
             self.ui_param.set_param(outText)
             f.close()
@@ -183,23 +188,24 @@ class Example(Ui_Form, QObject, Ui_Form_param, object):
         mas = self.ui_param.return_outMas()
         for i in mas:
             self.gridElementOfInput[self.curInd][3].append(i[0] + ' > ' + i[1])
+        self.gridElementOfInput[self.curInd][3].setReadOnly(True)
 
     def buttonClicked_addModule(self):
-        self.gridElementOfInput.append([QLabel(str(self.numb)),QLineEdit(),
+        self.gridElementOfInput.append([QLabel(str(self.numb + 1)),QLineEdit(),
         QPushButton("Add parameters"),QTextEdit(),QLineEdit(),
         QLineEdit(),QPushButton("Delete")])
-        self.gridElementOfInput[self.numb-1][2].clicked.connect(self.buttonClicked_adp)
-        self.gridElementOfInput[self.numb-1][6].clicked.connect(self.buttonClicked_del)
-        self.gridElementOfInput[self.numb-1][1].textChanged.connect(self.textLineEditChange)
-        self.gridElementOfInput[self.numb-1][2].setObjectName("adp"+str(self.numb-1))
-        self.gridElementOfInput[self.numb-1][6].setObjectName("btn"+str(self.numb-1))
-        self.gridElementOfInput[self.numb-1][1].setObjectName("prNam"+str(self.numb-1))
-        self.gridElementOfInput[self.numb-1][2].setEnabled(False)
-        self.gridElementOfInput[self.numb-1][3].setEnabled(False)
-        self.gridElementOfInput[self.numb-1][4].setEnabled(False)
-        self.gridElementOfInput[self.numb-1][5].setEnabled(False)
+        self.gridElementOfInput[self.numb][2].clicked.connect(self.buttonClicked_adp)
+        self.gridElementOfInput[self.numb][6].clicked.connect(self.buttonClicked_del)
+        self.gridElementOfInput[self.numb][1].textChanged.connect(self.textLineEditChange)
+        self.gridElementOfInput[self.numb][2].setObjectName("adp"+str(self.numb))
+        self.gridElementOfInput[self.numb][6].setObjectName("btn"+str(self.numb))
+        self.gridElementOfInput[self.numb][1].setObjectName("prNam"+str(self.numb))
+        self.gridElementOfInput[self.numb][2].setEnabled(False)
+        self.gridElementOfInput[self.numb][3].setEnabled(False)
+        self.gridElementOfInput[self.numb][4].setEnabled(False)
+        self.gridElementOfInput[self.numb][5].setEnabled(False)
         for i in range(7):
-            self.lay.addWidget(self.gridElementOfInput[self.numb-1][i],self.numb-1,i,1,1)
+            self.lay.addWidget(self.gridElementOfInput[self.numb][i],self.numb,i,1,1)
         self.numb += 1
 
     def fill_tree(self):
@@ -216,11 +222,46 @@ class Example(Ui_Form, QObject, Ui_Form_param, object):
         self.treeView.setColumnHidden(0,True)
         self.treeView.setModel(model)
 
+
+        root = model.invisibleRootItem()
+
+        parent = root
+
         proj = rwd.get_table("project")
-        model.appendRow([QStandardItem(str(proj[0][0])),QStandardItem(str(proj[0][1])),
-                        QStandardItem(str(proj[0][2])),QStandardItem(), QStandardItem()])
-        model.appendRow([QStandardItem(str(proj[1][0])),QStandardItem(str(proj[1][1])),
-                        QStandardItem(str(proj[1][2])),QStandardItem(), QStandardItem()])
+        print(proj)
+        for pr in proj:
+            parent.appendRow([QStandardItem(str(pr[0])),QStandardItem(str(pr[1])),
+                            QStandardItem(str(pr[2])),QStandardItem(), QStandardItem()])
+            parent = parent.child(parent.rowCount() - 1)
+
+            res = rwd.get_table_by_id("result","Project_id",pr[0])
+            for r in res:
+                old_parent = parent
+                parent.appendRow([QStandardItem(str(r[0])),QStandardItem(), QStandardItem(str(r[1])),
+                                QStandardItem(str(r[4])),QStandardItem(str(r[5]))])
+                # r[0]
+                parent = parent.child(parent.rowCount() - 1)
+                mod = rwd.get_table_by_id("module","Project_id",pr[0])
+                for m in mod:
+                    old_parent = parent
+                    parent.appendRow([QStandardItem(str(m[0])),QStandardItem(str(m[1])),
+                                    QStandardItem(str(m[2])),QStandardItem(), QStandardItem()])
+                    param = rwd.get_table_by_id("parameter","Module_id",m[0])
+                    parent = parent.child(parent.rowCount() - 1)
+                    for p in param:
+                        val = rwd.get_value(p[0],r[0])
+                        parent.appendRow([QStandardItem(str(p[0])),QStandardItem(str(p[2])),
+                                        QStandardItem(str(val[2])),QStandardItem(), QStandardItem()])
+                        # p[1]
+
+                    parent = old_parent
+                parent = old_parent
+
+
+
+
+
+
 
 
 class Param(Ui_Form_param, QObject):
@@ -269,7 +310,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     com = Communicate()
 
-    window = QWidget()
+    window = QMainWindow()
     window_param = QWidget()
     ui_param = Param(window_param, com)
     ui = Example(window, com, window_param, ui_param)
