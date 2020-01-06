@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 ## -*- coding: utf-8 -*-
 import os
 import math
@@ -18,10 +19,11 @@ def save(name='', folder='', fmt='png'):
     #plt.close()
 
 array=[] #считываем параметры
-# with  open('parametres.txt', 'r') as f:
-#     array = [row.strip().split('"')[1] for row in f]
-array = sys.argv
-array.remove(array[0])
+with  open('parameters', 'r') as f:
+    array = [row.strip().split('=')[1] for row in f]
+array = list(map(lambda s:float(s.strip()),array))
+# array = sys.argv
+# array.remove(array[0])
 array = list(map(float,array))
 
 x = [array[0],array[1],array[2]]

@@ -44,7 +44,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         text1, ok1 = QInputDialog.getText(qwe1, 'new project',
             'enter new project name:')
         if ok1:
-            path = QFileDialog.getExistingDirectory(self.form, 'Choose life', '/home')
+            path = QFileDialog.getExistingDirectory(self.form, 'Choose life', self.base_addr)
             self.label_6.setText(f"project name: {text1}")
             # for somethinf in path add modules
             print(str(path))
@@ -55,6 +55,36 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         self.comm.fillParam.connect(self.fillParamLineEdit)
         self.actionNew_project.triggered.connect(self.showDialog_createProject)
 
+    def exec_one_modul(self,i,file_name,path):
+        # изменить док
+        counter = 0
+        masChange = self.gridElementOfInput[i][3].toPlainText().split('\n')
+        for j in range(len(masChange)):
+            masChange[j] = masChange[j].split('>')
+
+        # создаем копию если ее нет, если она есть обращаемся к ней
+        if os.path.exists(file_name+'.bak'):
+            path = os.path.join(path,file_name+'.bak')
+            f = open(path,"r")
+            path = path[:-4]
+        else:
+            path = os.path.join(path,file_name)
+            shutil.copyfile(path, path + '.bak')
+            f = open(path,"r")
+        s = ""
+        mas_paramValue = []
+        for line in f:
+            s += line.replace(masChange[counter][0].strip(), masChange[counter][1].strip())
+            if counter+1 != len(masChange):
+                mas_paramValue.append(masChange[counter][1].strip())
+                # modules_paramValueRes[-1][-1].append(masChange[counter][1].strip())
+                counter += 1
+        f.close()
+        f = open(path,"w")
+        f.write(s)
+        f.close()
+        return mas_paramValue
+
     def execute(self):
         if self.label_6.text() == "project name: ...---...":
             self.showDialog_createProject()
@@ -62,6 +92,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
 
         mes = QMessageBox()
         re = ""
+        list_modules = []
         for i in range(len(self.gridElementOfInput)):
             if self.gridElementOfInput[i][2].isEnabled():
                 module_name = self.gridElementOfInput[i][1].text()
@@ -69,38 +100,22 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                 path = os.path.join(path,"programs",module_name)
                 modules_paramValueRes.append([module_name,path,[]])
                 os.chdir(path)                                   # меняем директорию
+                list_modules.append(path)
                 if os.path.exists('makefile'):
-                    # изменить док
-                    counter = 0
-                    masChange = self.gridElementOfInput[i][3].toPlainText().split('\n')
-                    for j in range(len(masChange)):
-                        masChange[j] = masChange[j].split('>')
-
-                    # создаем копию если ее нет, если она есть обращаемся к ней
-                    if os.path.exists('makefile.bak'):
-                        path = os.path.join(path,"makefile.bak")
-                        f = open(path,"r")
-                        path = path[:-4]
-                    else:
-                        path = os.path.join(path,"makefile")
-                        shutil.copyfile(path, path + '.bak')
-                        f = open(path,"r")
-                    s = ""
-                    for line in f:
-                        s += line.replace(masChange[counter][0].strip(), masChange[counter][1].strip())
-                        if counter+1 != len(masChange):
-                            modules_paramValueRes[-1][-1].append(masChange[counter][1].strip())
-                            counter += 1
-                    f.close()
-                    f = open(path,"w")
-                    f.write(s)
-                    f.close()
-
+                    modules_paramValueRes[-1][-1].extend(self.exec_one_modul(i,"makefile",path))
                     # запустить
                     loc_re = ""
                     re += "\n №" + str(i)
                     loc_re += str(subprocess.run('make'))+"\n"
                     loc_re += str(subprocess.run("./" + module_name))+"\n"
+                    modules_paramValueRes[-1].append(loc_re)
+                    re += loc_re
+                elif os.path.exists("parameters"):
+                    modules_paramValueRes[-1][-1].extend(self.exec_one_modul(i,"parameters",path))
+                    loc_re = ""
+                    re += "\n №" + str(i)
+                    ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
+                    loc_re += str(subprocess.run(ar))+"\n"
                     modules_paramValueRes[-1].append(loc_re)
                     re += loc_re
                 else:
@@ -115,14 +130,19 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         mes.setText(str(re))
         mes.exec_()
         # удалять все .bak
-        for file in glob.glob("*.bak"):
-            src = file
-            dst = file[:-4]
-            shutil.copyfile(src, dst)
-            os.remove(file)
+
+        for p in list_modules:
+            os.chdir(p)
+            for file in glob.glob("*.bak"):
+                src = file
+                dst = file[:-4]
+                shutil.copyfile(src, dst)
+                os.remove(file)
 
         # db project modules parametres values results
         rwd.add_([self.label_6.text().split(":")[1].strip(),self.base_addr],modules_paramValueRes)
+
+        self.fill_tree()
 
     def buttonClicked_del(self):
         mb = QMessageBox()
@@ -168,8 +188,23 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
             self.ui_param.set_param(outText)
             f.close()
         else:
-            mb.setText("(for lab_1: x1 x2 x3 epsilon)")
-            mb.exec()
+            if os.path.exists('parameters'):
+                if os.path.exists('parameters.bak'):
+                    path = os.path.join(path,"parameters.bak")
+                else:
+                    path = os.path.join(path,"parameters")
+                f = open(path)
+                outText = []
+                for line in f:
+                    if line.find("=") != -1:
+                        line = line.split('=')
+                        outText.append([line[0].strip(),line[1].strip()])
+                self.window_param.show()
+                self.ui_param.set_param(outText)
+                f.close()
+            else:
+                mb.setText("¯\_(&)_/¯")
+                mb.exec()
 
     def textLineEditChange(self):
         ind = int(str(self.form.sender().objectName())[5:])
@@ -192,8 +227,8 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
 
     def buttonClicked_addModule(self):
         self.gridElementOfInput.append([QLabel(str(self.numb + 1)),QLineEdit(),
-        QPushButton("Add parameters"),QTextEdit(),QLineEdit(),
-        QLineEdit(),QPushButton("Delete")])
+                                        QPushButton("Add parameters"),QTextEdit(),QLineEdit(),
+                                        QLineEdit(),QPushButton("Delete")])
         self.gridElementOfInput[self.numb][2].clicked.connect(self.buttonClicked_adp)
         self.gridElementOfInput[self.numb][6].clicked.connect(self.buttonClicked_del)
         self.gridElementOfInput[self.numb][1].textChanged.connect(self.textLineEditChange)
@@ -209,18 +244,18 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         self.numb += 1
 
     def fill_tree(self):
-        model = QStandardItemModel(0, 5, None)
-        # model.setHorizontalHeaderLabels(['id', 'name','path/value','date','time'])
-        model.setHeaderData(0, Qt.Horizontal, "id")
-        model.setHeaderData(1, Qt.Horizontal, "name")
-        model.setHeaderData(2, Qt.Horizontal, "path/value")
-        # model.setHeaderData(3, Qt.Horizontal, "module_id")
-        # model.setHeaderData(6, Qt.Horizontal, "parameter_id")
-        # model.setHeaderData(9, Qt.Horizontal, "value_id")
-        model.setHeaderData(3, Qt.Horizontal, "date")
-        model.setHeaderData(4, Qt.Horizontal, "time")
-        self.treeView.setColumnHidden(0,True)
+        model = QStandardItemModel(0, 6, None)
+        # model.setHorizontalHeaderLabels(['','id', 'name','path/value','date','time'])
+        model.setHeaderData(0, Qt.Horizontal, "")
+        model.setHeaderData(1, Qt.Horizontal, "id")
+        model.setHeaderData(2, Qt.Horizontal, "name")
+        model.setHeaderData(3, Qt.Horizontal, "path/value")
+        model.setHeaderData(4, Qt.Horizontal, "date")
+        model.setHeaderData(5, Qt.Horizontal, "time")
+
         self.treeView.setModel(model)
+        self.treeView.setColumnHidden(1,True)
+        self.treeView.setColumnWidth(0,200)
 
 
         root = model.invisibleRootItem()
@@ -228,41 +263,36 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         parent = root
 
         proj = rwd.get_table("project")
-        print(proj)
         for pr in proj:
-            parent.appendRow([QStandardItem(str(pr[0])),QStandardItem(str(pr[1])),
+            old_parent_pr = parent
+            parent.appendRow([QStandardItem("project:"),QStandardItem(str(pr[0])),QStandardItem(str(pr[1])),
                             QStandardItem(str(pr[2])),QStandardItem(), QStandardItem()])
             parent = parent.child(parent.rowCount() - 1)
 
             res = rwd.get_table_by_id("result","Project_id",pr[0])
             for r in res:
-                old_parent = parent
-                parent.appendRow([QStandardItem(str(r[0])),QStandardItem(), QStandardItem(str(r[1])),
+                old_parent_res = parent
+                parent.appendRow([QStandardItem("result:"),QStandardItem(str(r[0])),QStandardItem(), QStandardItem(str(r[1])),
                                 QStandardItem(str(r[4])),QStandardItem(str(r[5]))])
                 # r[0]
                 parent = parent.child(parent.rowCount() - 1)
                 mod = rwd.get_table_by_id("module","Project_id",pr[0])
                 for m in mod:
-                    old_parent = parent
-                    parent.appendRow([QStandardItem(str(m[0])),QStandardItem(str(m[1])),
+                    old_parent_mod = parent
+                    parent.appendRow([QStandardItem("module:"),QStandardItem(str(m[0])),QStandardItem(str(m[1])),
                                     QStandardItem(str(m[2])),QStandardItem(), QStandardItem()])
                     param = rwd.get_table_by_id("parameter","Module_id",m[0])
                     parent = parent.child(parent.rowCount() - 1)
                     for p in param:
                         val = rwd.get_value(p[0],r[0])
-                        parent.appendRow([QStandardItem(str(p[0])),QStandardItem(str(p[2])),
-                                        QStandardItem(str(val[2])),QStandardItem(), QStandardItem()])
-                        # p[1]
+                        if val != None:
+                            parent.appendRow([QStandardItem("parameter value:"),QStandardItem(str(p[0])),QStandardItem(str(p[2])),
+                                            QStandardItem(str(val[2])),QStandardItem(), QStandardItem()])
+                            # p[1]
 
-                    parent = old_parent
-                parent = old_parent
-
-
-
-
-
-
-
+                    parent = old_parent_mod
+                parent = old_parent_res
+            parent = old_parent_pr
 
 class Param(Ui_Form_param, QObject):
     def __init__(self, form, com):
