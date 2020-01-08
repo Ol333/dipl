@@ -3,7 +3,7 @@ import psycopg2
 from datetime import datetime
 
 
-array=[] #считываем параметры запуска и работы сервиса
+array=[] #считываем параметры
 with open('postgres_settings.txt', 'r') as f:
     array = [row.strip().split('"')[1] for row in f]
 
@@ -49,23 +49,26 @@ def add_(proj,modules_ParamValueRes):
                         RETURNING "Id";
                         """.format(mod[0],mod[1],id_proj))
         id_mod = cursor.fetchall()[0][0]
-        # res
 
-        cursor.execute("""INSERT INTO "result" ("Id","Path","File_extension" ,"Project_id","Date","Time")
-                        VALUES (default,'{}','{}',{},'{}','{}')
-                        RETURNING "Id";
-                        """.format(mod[3].replace("'",'"'),"",id_proj,datetime.now().isoformat(sep=' '),datetime.now().isoformat(sep=' ')))
-        id_res = cursor.fetchall()[0][0]
-        for PV in mod[2]:
-            param,value = PV.split('=')
-            cursor.execute("""INSERT INTO "parameter" ("Id","Module_id","Name","Type_value")
-                            VALUES (default,{},'{}','{}')
+        for j in range(3,len(mod)):
+            # res
+            cursor.execute("""INSERT INTO "result" ("Id","Path","File_extension" ,"Project_id","Date","Time")
+                            VALUES (default,'{}','{}',{},'{}','{}')
                             RETURNING "Id";
-                            """.format(id_mod,param.strip(),"string"))
-            id_param = cursor.fetchall()[0][0]
-            cursor.execute("""INSERT INTO "value" ("Id","Parameter_id","Value","Result_id" )
-                            VALUES (default,{},'{}',{});
-                            """.format(id_param,value.strip().strip("'"),id_res))
+                            """.format(mod[j].replace("'",'"'),"",id_proj,datetime.now().isoformat(sep=' '),datetime.now().replace(microsecond=0).isoformat(sep=' ')))
+            id_res = cursor.fetchall()[0][0]   
+            for PV in mod[2]:
+                param,value = PV.split('=')
+                cursor.execute("""INSERT INTO "parameter" ("Id","Module_id","Name","Type_value")
+                                VALUES (default,{},'{}','{}')
+                                RETURNING "Id";
+                                """.format(id_mod,param.strip(),"string"))
+                id_param = cursor.fetchall()[0][0]
+
+
+                cursor.execute("""INSERT INTO "value" ("Id","Parameter_id","Value","Result_id" )
+                                VALUES (default,{},'{}',{});
+                                """.format(id_param,value.strip().strip("'"),id_res))
     # cursor.execute()
     connection.commit()
 

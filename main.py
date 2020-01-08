@@ -7,6 +7,7 @@ QAction, QFileDialog)
 import subprocess
 from ui import Ui_MainWindow
 from param import Ui_Form_param
+from output import Ui_Form_out
 from PyQt5.QtCore import (QRect, QCoreApplication,pyqtSignal, QObject, Qt)
 from PyQt5.QtGui import QStandardItemModel,QStandardItem
 import os
@@ -16,14 +17,14 @@ import glob
 import rab_with_db as rwd
 
 
-class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
+class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
     numb = 0
     lay = QGridLayout()
     gridElementOfInput = []
     base_addr = None
     curInd = None
 
-    def __init__(self, form1, com, form2, ui):
+    def __init__(self, form1, com, form2, ui, form3, ui3):
         super().__init__()
         self.window_param = form2
         self.ui_param = ui
@@ -31,6 +32,8 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         self.setupUi(form1)
         self.connect_slots()
         self.form = form1
+        self.window_output = form3
+        self.ui_output = ui3
         self.base_addr = os.getcwd()
 
         self.buttonClicked_addModule()
@@ -55,29 +58,22 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         self.comm.fillParam.connect(self.fillParamLineEdit)
         self.actionNew_project.triggered.connect(self.showDialog_createProject)
 
-    def exec_one_modul(self,i,file_name,path):
+    def set_and_safe_one_modul_params(self,i,file_name,path):
         # изменить док
         counter = 0
         masChange = self.gridElementOfInput[i][3].toPlainText().split('\n')
         for j in range(len(masChange)):
             masChange[j] = masChange[j].split('>')
 
-        # создаем копию если ее нет, если она есть обращаемся к ней
-        if os.path.exists(file_name+'.bak'):
-            path = os.path.join(path,file_name+'.bak')
-            f = open(path,"r")
-            path = path[:-4]
-        else:
-            path = os.path.join(path,file_name)
-            shutil.copyfile(path, path + '.bak')
-            f = open(path,"r")
+        path = os.path.join(path,file_name)
+        shutil.copyfile(path, path + '.bak')
+        f = open(path,"r")
         s = ""
         mas_paramValue = []
         for line in f:
             s += line.replace(masChange[counter][0].strip(), masChange[counter][1].strip())
             if counter+1 != len(masChange):
                 mas_paramValue.append(masChange[counter][1].strip())
-                # modules_paramValueRes[-1][-1].append(masChange[counter][1].strip())
                 counter += 1
         f.close()
         f = open(path,"w")
@@ -90,7 +86,6 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
             self.showDialog_createProject()
         modules_paramValueRes = []
 
-        mes = QMessageBox()
         re = ""
         list_modules = []
         for i in range(len(self.gridElementOfInput)):
@@ -102,47 +97,58 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                 os.chdir(path)                                   # меняем директорию
                 list_modules.append(path)
                 if os.path.exists('makefile'):
-                    modules_paramValueRes[-1][-1].extend(self.exec_one_modul(i,"makefile",path))
+                    modules_paramValueRes[-1][-1].extend(self.set_and_safe_one_modul_params(i,"makefile",path))
                     # запустить
-                    loc_re = ""
                     re += "\n №" + str(i)
-                    loc_re += str(subprocess.run('make'))+"\n"
-                    loc_re += str(subprocess.run("./" + module_name))+"\n"
-                    modules_paramValueRes[-1].append(loc_re)
-                    re += loc_re
+                    for j in range(int(self.gridElementOfInput[i][4].text())):
+                        loc_re = ""
+                        some_str = subprocess.check_output('make',stderr=subprocess.STDOUT)
+                        some_str = some_str.decode()
+                        loc_re += some_str
+                        some_str = subprocess.check_output("./" + module_name,stderr=subprocess.STDOUT)
+                        some_str = some_str.decode()
+                        loc_re += some_str+"\n"
+                        modules_paramValueRes[-1].append(loc_re)
+                        re += "\n №№" + str(j)+' '+loc_re
+                    self.del_bak_file()
                 elif os.path.exists("parameters"):
-                    modules_paramValueRes[-1][-1].extend(self.exec_one_modul(i,"parameters",path))
-                    loc_re = ""
+                    modules_paramValueRes[-1][-1].extend(self.set_and_safe_one_modul_params(i,"parameters",path))
                     re += "\n №" + str(i)
-                    ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
-                    loc_re += str(subprocess.run(ar))+"\n"
-                    modules_paramValueRes[-1].append(loc_re)
-                    re += loc_re
+                    for j in range(int(self.gridElementOfInput[i][4].text())):
+                        loc_re = ""
+                        ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
+                        loc_re += str(subprocess.run(ar))+"\n"
+                        # some_str = subprocess.check_output(ar,stderr=subprocess.STDOUT)
+                        # some_str = some_str.decode()
+                        # print(some_str,"@@@@@")
+                        # loc_re += some_str+"\n"
+                        modules_paramValueRes[-1].append(loc_re)
+                        re += "\n №№" + str(j)+' '+loc_re
+                    self.del_bak_file()
                 else:
-                    loc_re = ""
                     re += "\n №" + str(i)
-                    ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
-                    ar.extend(self.gridElementOfInput[i][3].toPlainText().split(' '))
-                    loc_re += str(subprocess.run(ar))+"\n"
-                    modules_paramValueRes[-1].append(loc_re)
-                    re += loc_re
+                    for j in range(int(self.gridElementOfInput[i][4].text())):
+                        loc_re = ""
+                        ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
+                        ar.extend(self.gridElementOfInput[i][3].toPlainText().split(' '))
+                        loc_re += str(subprocess.run(ar))+"\n"
+                        modules_paramValueRes[-1].append(loc_re)
+                        re += "\n №№" + str(j)+' '+loc_re
 
-        mes.setText(str(re))
-        mes.exec_()
-        # удалять все .bak
-
-        for p in list_modules:
-            os.chdir(p)
-            for file in glob.glob("*.bak"):
-                src = file
-                dst = file[:-4]
-                shutil.copyfile(src, dst)
-                os.remove(file)
+        self.ui_output.setText(str(re))
+        self.window_output.show()
 
         # db project modules parametres values results
         rwd.add_([self.label_6.text().split(":")[1].strip(),self.base_addr],modules_paramValueRes)
 
         self.fill_tree()
+
+    def del_bak_file(self):
+        for file in glob.glob("*.bak"):
+            src = file
+            dst = file[:-4]
+            shutil.copyfile(src, dst)
+            os.remove(file)
 
     def buttonClicked_del(self):
         mb = QMessageBox()
@@ -173,10 +179,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         path = os.path.join(path,"programs",module_name)
         os.chdir(path)                                      # меняем директорию
         if os.path.exists('makefile'):
-            if os.path.exists('makefile.bak'):
-                path = os.path.join(path,"makefile.bak")
-            else:
-                path = os.path.join(path,"makefile")
+            path = os.path.join(path,"makefile")
             f = open(path)
             outText = []
             for line in f:
@@ -189,10 +192,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
             f.close()
         else:
             if os.path.exists('parameters'):
-                if os.path.exists('parameters.bak'):
-                    path = os.path.join(path,"parameters.bak")
-                else:
-                    path = os.path.join(path,"parameters")
+                path = os.path.join(path,"parameters")
                 f = open(path)
                 outText = []
                 for line in f:
@@ -211,12 +211,14 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         module_name = self.gridElementOfInput[ind][1].text()
         path = self.base_addr
         path = os.path.join(path,"programs",module_name)
-        if os.path.exists(path):
+        if os.path.exists(path) and module_name != "":
             self.gridElementOfInput[ind][2].setEnabled(True)
             self.gridElementOfInput[ind][3].setEnabled(True)
+            self.gridElementOfInput[ind][4].setEnabled(True)
         else:
             self.gridElementOfInput[ind][2].setEnabled(False)
             self.gridElementOfInput[ind][3].setEnabled(False)
+            self.gridElementOfInput[ind][4].setEnabled(False)
 
     def fillParamLineEdit(self):
         self.gridElementOfInput[self.curInd][3].clear()
@@ -235,6 +237,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         self.gridElementOfInput[self.numb][2].setObjectName("adp"+str(self.numb))
         self.gridElementOfInput[self.numb][6].setObjectName("btn"+str(self.numb))
         self.gridElementOfInput[self.numb][1].setObjectName("prNam"+str(self.numb))
+        self.gridElementOfInput[self.numb][4].setText("1")
         self.gridElementOfInput[self.numb][2].setEnabled(False)
         self.gridElementOfInput[self.numb][3].setEnabled(False)
         self.gridElementOfInput[self.numb][4].setEnabled(False)
@@ -279,13 +282,19 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                 mod = rwd.get_table_by_id("module","Project_id",pr[0])
                 for m in mod:
                     old_parent_mod = parent
-                    parent.appendRow([QStandardItem("module:"),QStandardItem(str(m[0])),QStandardItem(str(m[1])),
-                                    QStandardItem(str(m[2])),QStandardItem(), QStandardItem()])
+                    appRow_wait = [QStandardItem("module:"),QStandardItem(str(m[0])),QStandardItem(str(m[1])),
+                                    QStandardItem(str(m[2])),QStandardItem(), QStandardItem()]
+                    # parent.appendRow([QStandardItem("module:"),QStandardItem(str(m[0])),QStandardItem(str(m[1])),
+                    #                 QStandardItem(str(m[2])),QStandardItem(), QStandardItem()])
                     param = rwd.get_table_by_id("parameter","Module_id",m[0])
-                    parent = parent.child(parent.rowCount() - 1)
+                    # parent = parent.child(parent.rowCount() - 1)
                     for p in param:
                         val = rwd.get_value(p[0],r[0])
                         if val != None:
+                            if appRow_wait:
+                                parent.appendRow(appRow_wait)
+                                appRow_wait = None
+                                parent = parent.child(parent.rowCount() - 1)
                             parent.appendRow([QStandardItem("parameter value:"),QStandardItem(str(p[0])),QStandardItem(str(p[2])),
                                             QStandardItem(str(val[2])),QStandardItem(), QStandardItem()])
                             # p[1]
@@ -333,6 +342,19 @@ class Param(Ui_Form_param, QObject):
             self.mas[i][1].setText(list_param[i][1])
         self.outMas = list(map(lambda x: [x[0] + ' = ' + x[1]], list_param))
 
+class Output(Ui_Form_out):
+    def __init__(self, form):
+        super().__init__()
+        self.window = form
+        self.setupUi(form)
+
+    def setText(self,text):
+        self.textEdit.append(text)
+
+    def closeEvent(self, event):
+        self.textEdit.clear()
+        self.window.hide()
+
 class Communicate(QObject):
     fillParam = pyqtSignal()
 
@@ -342,8 +364,10 @@ if __name__ == '__main__':
 
     window = QMainWindow()
     window_param = QWidget()
+    window_output = QWidget()
+    ui_output = Output(window_output)
     ui_param = Param(window_param, com)
-    ui = Example(window, com, window_param, ui_param)
+    ui = Example(window, com, window_param, ui_param, window_output, ui_output)
     window.show()
 
     sys.exit(app.exec_())
