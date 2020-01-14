@@ -47,16 +47,22 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         text1, ok1 = QInputDialog.getText(qwe1, 'new project',
             'enter new project name:')
         if ok1:
-            path = QFileDialog.getExistingDirectory(self.form, 'Choose life', self.base_addr)
-            self.label_6.setText(f"project name: {text1}")
-            # for somethinf in path add modules
-            print(str(path))
+            path = QFileDialog.getExistingDirectory(self.form, 'Choose directory of project (press Enter)', self.base_addr)
+            if path:
+                self.label_6.setText(f"project name: {text1}")
+                # for somethinf in path add modules
+
+    def delete_and_create_db_tables(self):
+        rwd.delete_db_tables()
+        rwd.create_db_tables()
+        self.fill_tree()
 
     def connect_slots(self):
         self.pushButton.clicked.connect(self.execute)
         self.pushButton_2.clicked.connect(self.buttonClicked_addModule)
         self.comm.fillParam.connect(self.fillParamLineEdit)
         self.actionNew_project.triggered.connect(self.showDialog_createProject)
+        self.actionDelete_db_and_create_new.triggered.connect(self.delete_and_create_db_tables)
 
     def set_and_safe_one_modul_params(self,i,file_name,path):
         # изменить док
@@ -107,7 +113,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                         loc_re += some_str
                         some_str = subprocess.check_output("./" + module_name,stderr=subprocess.STDOUT)
                         some_str = some_str.decode()
-                        loc_re += some_str+"\n"
+                        loc_re += some_str
                         modules_paramValueRes[-1].append(loc_re)
                         re += "\n №№" + str(j)+' '+loc_re
                     self.del_bak_file()
@@ -117,7 +123,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                     for j in range(int(self.gridElementOfInput[i][4].text())):
                         loc_re = ""
                         ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
-                        loc_re += str(subprocess.run(ar))+"\n"
+                        loc_re += str(subprocess.run(ar))
                         # some_str = subprocess.check_output(ar,stderr=subprocess.STDOUT)
                         # some_str = some_str.decode()
                         # print(some_str,"@@@@@")
@@ -131,7 +137,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                         loc_re = ""
                         ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
                         ar.extend(self.gridElementOfInput[i][3].toPlainText().split(' '))
-                        loc_re += str(subprocess.run(ar))+"\n"
+                        loc_re += str(subprocess.run(ar))
                         modules_paramValueRes[-1].append(loc_re)
                         re += "\n №№" + str(j)+' '+loc_re
 

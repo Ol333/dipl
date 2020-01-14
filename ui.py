@@ -11,11 +11,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(671, 562)
+        MainWindow.resize(670, 568)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(10, 0, 641, 511))
+        self.tabWidget.setGeometry(QtCore.QRect(10, 10, 651, 511))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(238, 238, 236))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -46,7 +46,7 @@ class Ui_MainWindow(object):
         self.pushButton_2.setPalette(palette)
         self.pushButton_2.setObjectName("pushButton_2")
         self.label_5 = QtWidgets.QLabel(self.tab)
-        self.label_5.setGeometry(QtCore.QRect(500, 10, 81, 71))
+        self.label_5.setGeometry(QtCore.QRect(490, 10, 81, 71))
         self.label_5.setObjectName("label_5")
         self.label_2 = QtWidgets.QLabel(self.tab)
         self.label_2.setGeometry(QtCore.QRect(30, 30, 91, 51))
@@ -119,7 +119,7 @@ class Ui_MainWindow(object):
         self.pushButton.setFont(font)
         self.pushButton.setObjectName("pushButton")
         self.label_6 = QtWidgets.QLabel(self.tab)
-        self.label_6.setGeometry(QtCore.QRect(10, 0, 471, 17))
+        self.label_6.setGeometry(QtCore.QRect(10, 10, 471, 17))
         self.label_6.setObjectName("label_6")
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
@@ -137,7 +137,7 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tab_3, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 671, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 670, 22))
         self.menubar.setObjectName("menubar")
         self.menu_File = QtWidgets.QMenu(self.menubar)
         self.menu_File.setObjectName("menu_File")
@@ -147,7 +147,10 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.actionNew_project = QtWidgets.QAction(MainWindow)
         self.actionNew_project.setObjectName("actionNew_project")
+        self.actionDelete_db_and_create_new = QtWidgets.QAction(MainWindow)
+        self.actionDelete_db_and_create_new.setObjectName("actionDelete_db_and_create_new")
         self.menu_File.addAction(self.actionNew_project)
+        self.menu_File.addAction(self.actionDelete_db_and_create_new)
         self.menubar.addAction(self.menu_File.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -156,7 +159,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "SPaCCE"))
         self.pushButton_2.setText(_translate("MainWindow", "add module"))
         self.label_5.setText(_translate("MainWindow", "names of \n"
 "resalts for \n"
@@ -178,4 +181,5 @@ class Ui_MainWindow(object):
         self.actionNew_project.setText(_translate("MainWindow", "New project"))
         self.actionNew_project.setStatusTip(_translate("MainWindow", "Create new project"))
         self.actionNew_project.setShortcut(_translate("MainWindow", "Ctrl+P"))
+        self.actionDelete_db_and_create_new.setText(_translate("MainWindow", "Delete db and create new"))
 
