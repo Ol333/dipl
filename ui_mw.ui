@@ -397,6 +397,19 @@ of launchs</string>
      <attribute name="title">
       <string>del</string>
      </attribute>
+     <widget class="QPushButton" name="pushButton_3">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>280</y>
+        <width>83</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>delete</string>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>

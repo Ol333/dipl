@@ -1,0 +1,6 @@
+numexpr==2.6.9
+matplotlib==3.0.2
+numpy==1.16.2
+psycopg2==2.8.4
+PyQt5==5.14.1
+sympy==1.5.1
