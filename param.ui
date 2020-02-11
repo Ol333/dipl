@@ -91,8 +91,8 @@
     </font>
    </property>
    <property name="text">
-    <string>if the parameter you need is not displayed, please add &quot;V_&quot; 
-to the beginning of the parameter's name or contact the author</string>
+    <string>if the parameter you need is not displayed 
+please contact the author</string>
    </property>
   </widget>
  </widget>

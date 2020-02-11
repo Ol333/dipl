@@ -191,8 +191,8 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
             for line in f:
                 if line.find("=") != -1:
                     line = line.split('=')
-                    if line[0][:2]=="V_":
-                        outText.append([line[0].strip(),line[1].strip()])
+                    # if line[0][:2]=="V_":
+                    outText.append([line[0].strip(),line[1].strip()])
             self.window_param.show()
             self.ui_param.set_param(outText)
             f.close()
@@ -355,11 +355,8 @@ class Output(Ui_Form_out):
         self.setupUi(form)
 
     def setText(self,text):
-        self.textEdit.append(text)
-
-    def closeEvent(self, event):
         self.textEdit.clear()
-        self.window.hide()
+        self.textEdit.append(text)
 
 class Communicate(QObject):
     fillParam = pyqtSignal()

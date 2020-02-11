@@ -46,6 +46,6 @@ class Ui_Form_param(object):
         Form_param.setWindowTitle(_translate("Form_param", "Parameters"))
         self.label.setText(_translate("Form_param", "Parameter"))
         self.label_2.setText(_translate("Form_param", "value"))
-        self.label_3.setText(_translate("Form_param", "if the parameter you need is not displayed, please add \"V_\" \n"
-"to the beginning of the parameter\'s name or contact the author"))
+        self.label_3.setText(_translate("Form_param", "if the parameter you need is not displayed \n"
+"please contact the author"))
 
