@@ -15,12 +15,15 @@ import fileinput
 import shutil
 import glob
 import rab_with_db as rwd
-
+import resource
+from datetime import datetime
 
 class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
     numb = 0
     lay = QGridLayout()
     gridElementOfInput = []
+    moduleInfo = []
+    timeResult = {}
     base_addr = None
     curInd = None
 
@@ -97,6 +100,10 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         for i in range(len(self.gridElementOfInput)):
             if self.gridElementOfInput[i][2].isEnabled():
                 module_name = self.gridElementOfInput[i][1].text()
+                if not self.timeResult.get(module_name):
+                    self.timeResult[module_name] = {'worstWorstTime':None,'worstAverageTime':None,
+                                                    'bestAverageTime':None,'bestBestTime':None,
+                                                    'wwtModule':0,'watModule':0,'batModule':0,'bbtModule':0}
                 path = self.base_addr
                 path = os.path.join(path,"programs",module_name)
                 modules_paramValueRes.append([module_name,path,[]])
@@ -111,7 +118,22 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                         some_str = subprocess.check_output('make',stderr=subprocess.STDOUT)
                         some_str = some_str.decode()
                         loc_re += some_str
+                        # input=string
+                        # при заполнении текстэдита и нахождении файла/папки заполняется текстэдит
+                        # его можно изменять при нажатии на кнопку
+                        # он хранится как строка в $объекте$гриде и полностью передается
+                        # без '>'
+                        start_time = datetime.now()
                         some_str = subprocess.check_output("./" + module_name,stderr=subprocess.STDOUT)
+                        t = datetime.now()-start_time
+                        if j==0 or self.moduleInfo[i]['worstTime'] < t:
+                            self.moduleInfo[i]['worstTime'] = t
+                        if j==0 or self.moduleInfo[i]['bestTime'] > t:
+                            self.moduleInfo[i]['bestTime'] = t
+                        if j==0:
+                            self.moduleInfo[i]['sumTime'] = t
+                        else:
+                            self.moduleInfo[i]['sumTime'] += t
                         some_str = some_str.decode()
                         loc_re += some_str
                         modules_paramValueRes[-1].append(loc_re)
@@ -122,7 +144,17 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                     re += "\n №" + str(i)
                     for j in range(int(self.gridElementOfInput[i][4].text())):
                         loc_re = ""
+                        start_time = datetime.now()
                         ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
+                        t = datetime.now()-start_time
+                        if j==0 or self.moduleInfo[i]['worstTime'] < t:
+                            self.moduleInfo[i]['worstTime'] = t
+                        if j==0 or self.moduleInfo[i]['bestTime'] > t:
+                            self.moduleInfo[i]['bestTime'] = t
+                        if j==0:
+                            self.moduleInfo[i]['sumTime'] = t
+                        else:
+                            self.moduleInfo[i]['sumTime'] += t
                         loc_re += str(subprocess.run(ar))
                         # some_str = subprocess.check_output(ar,stderr=subprocess.STDOUT)
                         # some_str = some_str.decode()
@@ -135,12 +167,60 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                     re += "\n №" + str(i)
                     for j in range(int(self.gridElementOfInput[i][4].text())):
                         loc_re = ""
+                        start_time = datetime.now()
                         ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
+                        t = datetime.now()-start_time
+                        if j==0 or self.moduleInfo[i]['worstTime'] < t:
+                            self.moduleInfo[i]['worstTime'] = t
+                        if j==0 or self.moduleInfo[i]['bestTime'] > t:
+                            self.moduleInfo[i]['bestTime'] = t
+                        if j==0:
+                            self.moduleInfo[i]['sumTime'] = t
+                        else:
+                            self.moduleInfo[i]['sumTime'] += t
                         ar.extend(self.gridElementOfInput[i][3].toPlainText().split(' '))
                         loc_re += str(subprocess.run(ar))
                         modules_paramValueRes[-1].append(loc_re)
                         re += "\n №№" + str(j)+' '+loc_re
+            re += '****'+'\n'
+            re += str(self.moduleInfo[i]['worstTime'])+' - worst Time' + '\n'
+            re += str(self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text()))+' - average Time' + '\n'
+            re += str(self.moduleInfo[i]['bestTime'])+' - best Time' + '\n'
+            re += '****'+'\n'
+            if self.timeResult[module_name]['worstWorstTime'] == None:
+                self.timeResult[module_name]['worstWorstTime']=self.moduleInfo[i]['worstTime']
+                self.timeResult[module_name]['wwtModule'] = i
+                self.timeResult[module_name]['worstAverageTime']=self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())
+                self.timeResult[module_name]['watModule'] = i
+                self.timeResult[module_name]['bestAverageTime']=self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())
+                self.timeResult[module_name]['batModule'] = i
+                self.timeResult[module_name]['bestBestTime']=self.moduleInfo[i]['bestTime']
+                self.timeResult[module_name]['bbtModule'] = i
+            else:
+                if self.timeResult[module_name]['worstWorstTime'] < self.moduleInfo[i]['worstTime']:
+                    self.timeResult[module_name]['worstWorstTime'] = self.moduleInfo[i]['worstTime']
+                    self.timeResult[module_name]['wwtModule']=i
+                if self.timeResult[module_name]['worstAverageTime'] < self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text()):
+                    self.timeResult[module_name]['worstAverageTime'] = self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())
+                    self.timeResult[module_name]['watModule']=i
+                if self.timeResult[module_name]['bestAverageTime'] > self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text()):
+                    self.timeResult[module_name]['bestAverageTime'] = self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())
+                    self.timeResult[module_name]['batModule']=i
+                if self.timeResult[module_name]['bestBestTime'] > self.moduleInfo[i]['bestTime']:
+                    self.timeResult[module_name]['bestBestTime'] = self.moduleInfo[i]['bestTime']
+                    self.timeResult[module_name]['bbtModule']=i
 
+        for mod in self.timeResult.keys():
+            re += '#######'+'\n'
+            re += mod+'\n'
+            re += str(self.timeResult[mod]['worstWorstTime'])+' - worst worst Time' + '\n'
+            re += 'worst worst Time module №:  ' + str(self.timeResult[mod]['wwtModule']+1)+'\n'
+            re += str(self.timeResult[mod]['worstAverageTime'])+' - worst average Time' + '\n'
+            re += 'worst average Time module №:  ' + str(self.timeResult[mod]['watModule']+1)+'\n'
+            re += str(self.timeResult[mod]['bestAverageTime'])+' - best average Time' + '\n'
+            re += 'best average Time module №:  ' + str(self.timeResult[mod]['batModule']+1)+'\n'
+            re += str(self.timeResult[mod]['bestBestTime'])+' - best best Time' + '\n'
+            re += 'best best Time module №:  ' + str(self.timeResult[mod]['bbtModule']+1)+'\n'
         self.ui_output.setText(str(re))
         self.window_output.show()
 
@@ -148,6 +228,9 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         rwd.add_([self.label_6.text().split(":")[1].strip(),self.base_addr],modules_paramValueRes)
 
         self.fill_tree()
+        # info = resource.getrusage(resource.RUSAGE_CHILDREN)
+        # print(info)
+
 
     def del_bak_file(self):
         for file in glob.glob("*.bak"):
@@ -238,6 +321,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.gridElementOfInput.append([QLabel(str(self.numb + 1)),QLineEdit(),
                                         QPushButton("Add parameters"),QTextEdit(),QLineEdit(),
                                         QLineEdit(),QPushButton("Delete")])
+        self.moduleInfo.append({'makeText':'','worstTime':None,'bestTime':None,'sumTime':0})
         self.gridElementOfInput[self.numb][2].clicked.connect(self.buttonClicked_adp)
         self.gridElementOfInput[self.numb][6].clicked.connect(self.buttonClicked_del)
         self.gridElementOfInput[self.numb][1].textChanged.connect(self.textLineEditChange)
