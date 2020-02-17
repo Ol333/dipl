@@ -74,9 +74,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         for j in range(len(masChange)):
             masChange[j] = masChange[j].split('>')
 
-        path = os.path.join(path,file_name)
-        shutil.copyfile(path, path + '.bak')
-        f = open(path,"r")
+        f = open(os.path.join(path,file_name),"r")
         s = ""
         mas_paramValue = []
         for line in f:
@@ -85,9 +83,9 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                 mas_paramValue.append(masChange[counter][1].strip())
                 counter += 1
         f.close()
-        f = open(path,"w")
-        f.write(s)
-        f.close()
+        f_new = open(os.path.join(path,"temporary_new_file"),"w")
+        f_new.write(s)
+        f_new.close()
         return mas_paramValue
 
     def execute(self):
@@ -115,7 +113,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                     re += "\n №" + str(i)
                     for j in range(int(self.gridElementOfInput[i][4].text())):
                         loc_re = ""
-                        some_str = subprocess.check_output('make',stderr=subprocess.STDOUT)
+                        some_str = subprocess.check_output(['make','-f','temporary_new_file'],stderr=subprocess.STDOUT)
                         some_str = some_str.decode()
                         loc_re += some_str
                         # input=string
@@ -138,7 +136,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                         loc_re += some_str
                         modules_paramValueRes[-1].append(loc_re)
                         re += "\n №№" + str(j)+' '+loc_re
-                    self.del_bak_file()
+                    os.remove('temporary_new_file')
                 elif os.path.exists("parameters"):
                     modules_paramValueRes[-1][-1].extend(self.set_and_safe_one_modul_params(i,"parameters",path))
                     re += "\n №" + str(i)
@@ -162,7 +160,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                         # loc_re += some_str+"\n"
                         modules_paramValueRes[-1].append(loc_re)
                         re += "\n №№" + str(j)+' '+loc_re
-                    self.del_bak_file()
+                    os.remove('temporary_new_file')
                 else:
                     re += "\n №" + str(i)
                     for j in range(int(self.gridElementOfInput[i][4].text())):
@@ -182,6 +180,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                         loc_re += str(subprocess.run(ar))
                         modules_paramValueRes[-1].append(loc_re)
                         re += "\n №№" + str(j)+' '+loc_re
+
             re += '****'+'\n'
             re += str(self.moduleInfo[i]['worstTime'])+' - worst Time' + '\n'
             re += str(self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text()))+' - average Time' + '\n'
@@ -231,13 +230,10 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         # info = resource.getrusage(resource.RUSAGE_CHILDREN)
         # print(info)
 
-
-    def del_bak_file(self):
-        for file in glob.glob("*.bak"):
-            src = file
-            dst = file[:-4]
-            shutil.copyfile(src, dst)
-            os.remove(file)
+    # def del_bak_file(self):
+    #     for file in glob.glob("temporary_new_file"):
+    #         print(file)
+    #         os.remove(file)
 
     def buttonClicked_del(self):
         mb = QMessageBox()
