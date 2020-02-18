@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import sys
-from PyQt5.QtWidgets import (QWidget, QPushButton, QLineEdit,
+from PyQt5.QtWidgets import (QWidget, QPushButton, QLineEdit, QCheckBox,
 QGridLayout, QInputDialog, QApplication, QMessageBox, QTextEdit,
 QGroupBox, QScrollArea, QLabel, QHBoxLayout, QMainWindow,
 QAction, QFileDialog)
@@ -12,8 +12,7 @@ from PyQt5.QtCore import (QRect, QCoreApplication,pyqtSignal, QObject, Qt)
 from PyQt5.QtGui import QStandardItemModel,QStandardItem
 import os
 import fileinput
-import shutil
-import glob
+# import glob
 import rab_with_db as rwd
 import resource
 from datetime import datetime
@@ -71,16 +70,14 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         # изменить док
         counter = 0
         masChange = self.gridElementOfInput[i][3].toPlainText().split('\n')
-        for j in range(len(masChange)):
-            masChange[j] = masChange[j].split('>')
 
         f = open(os.path.join(path,file_name),"r")
         s = ""
         mas_paramValue = []
         for line in f:
-            s += line.replace(masChange[counter][0].strip(), masChange[counter][1].strip())
+            s += line.replace(self.moduleInfo[i]['originParam'][counter][0]+' = '+self.moduleInfo[i]['originParam'][counter][1], masChange[counter].strip())
             if counter+1 != len(masChange):
-                mas_paramValue.append(masChange[counter][1].strip())
+                mas_paramValue.append(masChange[counter].strip())
                 counter += 1
         f.close()
         f_new = open(os.path.join(path,"temporary_new_file"),"w")
@@ -116,11 +113,6 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                         some_str = subprocess.check_output(['make','-f','temporary_new_file'],stderr=subprocess.STDOUT)
                         some_str = some_str.decode()
                         loc_re += some_str
-                        # input=string
-                        # при заполнении текстэдита и нахождении файла/папки заполняется текстэдит
-                        # его можно изменять при нажатии на кнопку
-                        # он хранится как строка в $объекте$гриде и полностью передается
-                        # без '>'
                         start_time = datetime.now()
                         some_str = subprocess.check_output("./" + module_name,stderr=subprocess.STDOUT)
                         t = datetime.now()-start_time
@@ -230,11 +222,6 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         # info = resource.getrusage(resource.RUSAGE_CHILDREN)
         # print(info)
 
-    # def del_bak_file(self):
-    #     for file in glob.glob("temporary_new_file"):
-    #         print(file)
-    #         os.remove(file)
-
     def buttonClicked_del(self):
         mb = QMessageBox()
         ind = int(str(self.form.sender().objectName())[3:])
@@ -255,14 +242,12 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         #     if i != 0:
         #         self.lay.itemAtPosition(i,6).widget().setObjectName("del"+str(i))
 
-
-    def buttonClicked_adp(self):
-        mb = QMessageBox()
-        self.curInd = int(str(self.form.sender().objectName())[3:])
-        module_name = self.gridElementOfInput[self.curInd][1].text()
+    def take_params_from_file(self,index):
+        module_name = self.gridElementOfInput[index][1].text()
         path = self.base_addr
         path = os.path.join(path,"programs",module_name)
         os.chdir(path)                                      # меняем директорию
+
         if os.path.exists('makefile'):
             path = os.path.join(path,"makefile")
             f = open(path)
@@ -273,9 +258,8 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                     # if line[0][:2]=="V_":
                     if line[0].lstrip()[0] != '#':
                         outText.append([line[0].strip(),line[1].strip()])
-            self.window_param.show()
-            self.ui_param.set_param(outText)
             f.close()
+            return outText
         else:
             if os.path.exists('parameters'):
                 path = os.path.join(path,"parameters")
@@ -284,13 +268,20 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                 for line in f:
                     if line.find("=") != -1:
                         line = line.split('=')
-                        outText.append([line[0].strip(),line[1].strip()])
-                self.window_param.show()
-                self.ui_param.set_param(outText)
+                        if line[0].lstrip()[0] != '#':
+                            outText.append([line[0].strip(),line[1].strip()])
                 f.close()
+                return outText
             else:
-                mb.setText("¯\_(&)_/¯")
-                mb.exec()
+                return "¯\_(&)_/¯"
+
+    def buttonClicked_adp(self):
+        self.curInd = int(str(self.form.sender().objectName())[3:])
+        outText = self.gridElementOfInput[self.curInd][3].toPlainText().split('\n')
+        for j in range(len(outText)):
+            outText[j] = outText[j].split('=')
+        self.window_param.show()
+        self.ui_param.set_param(outText)
 
     def textLineEditChange(self):
         ind = int(str(self.form.sender().objectName())[5:])
@@ -301,6 +292,12 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
             self.gridElementOfInput[ind][2].setEnabled(True)
             self.gridElementOfInput[ind][3].setEnabled(True)
             self.gridElementOfInput[ind][4].setEnabled(True)
+            textParam = self.take_params_from_file(ind)
+            self.moduleInfo[ind]['originParam']=textParam
+            self.gridElementOfInput[ind][3].clear()
+            for i in textParam:
+                self.gridElementOfInput[ind][3].append(i[0]+' = '+i[1])
+            self.gridElementOfInput[ind][3].setReadOnly(True)
         else:
             self.gridElementOfInput[ind][2].setEnabled(False)
             self.gridElementOfInput[ind][3].setEnabled(False)
@@ -309,15 +306,34 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
     def fillParamLineEdit(self):
         self.gridElementOfInput[self.curInd][3].clear()
         mas = self.ui_param.return_outMas()
-        for i in mas:
-            self.gridElementOfInput[self.curInd][3].append(i[0] + ' > ' + i[1])
-        self.gridElementOfInput[self.curInd][3].setReadOnly(True)
+        for i in mas[2]:
+            self.gridElementOfInput[self.curInd][3].append(i)
+
+        if mas[0][0] == 'someone want a combination':
+            numbFl = len(mas[1])
+            for i in range(2**numbFl-1):
+                self.buttonClicked_addModule()
+                self.gridElementOfInput[self.numb-1][1].setText(self.gridElementOfInput[self.curInd][1].text())
+                self.gridElementOfInput[self.numb-1][4].setText(self.gridElementOfInput[self.curInd][4].text())
+                strings = self.gridElementOfInput[self.curInd][3].toPlainText().split('\n')
+                for numb in mas[0][1]:
+                    temp = strings[numb].split('=')
+                    temp[1] = ''
+                    strings[numb] = '='.join(temp)
+                for j in range(numbFl):
+                    if i&(0b1 << j):
+                        temp = strings[mas[1][j]['number']].split('=')
+                        temp[1] += mas[1][j]['param'] + ' '
+                        strings[mas[1][j]['number']] = '='.join(temp)
+                self.gridElementOfInput[self.numb-1][3].clear()
+                for i in strings:
+                    self.gridElementOfInput[self.numb-1][3].append(i.strip())
 
     def buttonClicked_addModule(self):
         self.gridElementOfInput.append([QLabel(str(self.numb + 1)),QLineEdit(),
-                                        QPushButton("Add parameters"),QTextEdit(),QLineEdit(),
+                                        QPushButton("Change \nparameters"),QTextEdit(),QLineEdit(),
                                         QLineEdit(),QPushButton("Delete")])
-        self.moduleInfo.append({'makeText':'','worstTime':None,'bestTime':None,'sumTime':0})
+        self.moduleInfo.append({'originParam':None,'worstTime':None,'bestTime':None,'sumTime':0})
         self.gridElementOfInput[self.numb][2].clicked.connect(self.buttonClicked_adp)
         self.gridElementOfInput[self.numb][6].clicked.connect(self.buttonClicked_del)
         self.gridElementOfInput[self.numb][1].textChanged.connect(self.textLineEditChange)
@@ -329,6 +345,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.gridElementOfInput[self.numb][3].setEnabled(False)
         self.gridElementOfInput[self.numb][4].setEnabled(False)
         self.gridElementOfInput[self.numb][5].setEnabled(False)
+        self.gridElementOfInput[self.numb][3].setReadOnly(True)
         for i in range(7):
             self.lay.addWidget(self.gridElementOfInput[self.numb][i],self.numb,i,1,1)
         self.numb += 1
@@ -405,10 +422,26 @@ class Param(Ui_Form_param, QObject):
         self.buttonBox.rejected.connect(self.buttonClicked_reject)
 
     def buttonClicked_accept(self):
+        combination = []
+        combinationIndex = []
         for i in range(len(self.mas)):
-            self.outMas[i].append(self.mas[i][0].text() + ' = ' + self.mas[i][1].text())
+            if self.mas[i][2].isChecked():
+                tempL = list(self.mas[i][1].text().strip().split(' '))
+                for j in tempL:
+                    combination.append({'number':i,'param':j})
+                    combinationIndex.append(i)
+        if len(combination) > 0:
+            self.outMas.append(['someone want a combination',combinationIndex])
+            self.outMas.append(combination)
+        else:
+            self.outMas.append(['',])
+            self.outMas.append(list())
+        self.outMas.append(list())
+
+        for i in range(len(self.mas)):
+            self.outMas[2].append(self.mas[i][0].text().strip() + ' = ' + self.mas[i][1].text().strip())
         self.window.hide()
-        self.comm.fillParam.emit()
+        self.comm.fillParam.emit() #вызов функции из главного окна
 
     def return_outMas(self):
         return self.outMas
@@ -423,11 +456,13 @@ class Param(Ui_Form_param, QObject):
             self.lay.itemAt(i).widget().close()
 
         for i in range(len(list_param)):
-            self.mas.append([QLabel(list_param[i][0]),QLineEdit()])
+            self.mas.append([QLabel(list_param[i][0]),QLineEdit(),QCheckBox()])
             self.lay.addWidget(self.mas[i][0],i,0,1,1)
             self.lay.addWidget(self.mas[i][1],i,1,1,1)
+            self.lay.addWidget(self.mas[i][2],i,2,1,1)
             self.mas[i][1].setText(list_param[i][1])
-        self.outMas = list(map(lambda x: [x[0] + ' = ' + x[1]], list_param))
+        # self.outMas = list(map(lambda x: [x[0] + ' = ' + x[1]], list_param))
+        self.outMas = list()
 
 class Output(Ui_Form_out):
     def __init__(self, form):

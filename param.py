@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form_param(object):
     def setupUi(self, Form_param):
         Form_param.setObjectName("Form_param")
-        Form_param.resize(401, 300)
+        Form_param.resize(401, 310)
         self.scrollArea = QtWidgets.QScrollArea(Form_param)
         self.scrollArea.setGeometry(QtCore.QRect(10, 30, 381, 201))
         self.scrollArea.setWidgetResizable(True)
@@ -27,7 +27,7 @@ class Ui_Form_param(object):
         self.label_2.setGeometry(QtCore.QRect(220, 10, 64, 17))
         self.label_2.setObjectName("label_2")
         self.buttonBox = QtWidgets.QDialogButtonBox(Form_param)
-        self.buttonBox.setGeometry(QtCore.QRect(120, 270, 166, 25))
+        self.buttonBox.setGeometry(QtCore.QRect(120, 280, 166, 25))
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.label_3 = QtWidgets.QLabel(Form_param)
@@ -37,6 +37,9 @@ class Ui_Form_param(object):
         font.setPointSize(8)
         self.label_3.setFont(font)
         self.label_3.setObjectName("label_3")
+        self.label_7 = QtWidgets.QLabel(Form_param)
+        self.label_7.setGeometry(QtCore.QRect(340, 10, 41, 17))
+        self.label_7.setObjectName("label_7")
 
         self.retranslateUi(Form_param)
         QtCore.QMetaObject.connectSlotsByName(Form_param)
@@ -47,5 +50,7 @@ class Ui_Form_param(object):
         self.label.setText(_translate("Form_param", "Parameter"))
         self.label_2.setText(_translate("Form_param", "value"))
         self.label_3.setText(_translate("Form_param", "if the parameter you need is not displayed \n"
-"please contact the author"))
+"please contact the author\n"
+"check group field for parameter\'s value combination"))
+        self.label_7.setText(_translate("Form_param", "group"))
 
