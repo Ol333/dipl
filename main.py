@@ -12,10 +12,12 @@ from PyQt5.QtCore import (QRect, QCoreApplication,pyqtSignal, QObject, Qt)
 from PyQt5.QtGui import QStandardItemModel,QStandardItem
 import os
 import fileinput
-# import glob
 import rab_with_db as rwd
 import resource
 from datetime import datetime
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
     numb = 0
@@ -42,7 +44,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.scrollAreaWidgetContents.setLayout(self.lay)
         self.scrollArea.setAlignment(Qt.AlignBottom)
 
-        self.fill_tree()
+        # self.fill_tree()
 
     def showDialog_createProject(self):
         qwe1 = QWidget()
@@ -65,6 +67,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.comm.fillParam.connect(self.fillParamLineEdit)
         self.actionNew_project.triggered.connect(self.showDialog_createProject)
         self.actionDelete_db_and_create_new.triggered.connect(self.delete_and_create_db_tables)
+        self.pushButton_4.clicked.connect(self.fill_tree)
 
     def set_and_safe_one_modul_params(self,i,file_name,path):
         # изменить док
@@ -75,6 +78,8 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         s = ""
         mas_paramValue = []
         for line in f:
+            if masChange[counter].strip().split(' ')[0]=="RANDFLAGS":
+                self.timeResult[os.path.split(path)[-1]]['diagram_names'].append(masChange[counter])
             s += line.replace(self.moduleInfo[i]['originParam'][counter][0]+' = '+self.moduleInfo[i]['originParam'][counter][1], masChange[counter].strip())
             if counter+1 != len(masChange):
                 mas_paramValue.append(masChange[counter].strip())
@@ -98,7 +103,8 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                 if not self.timeResult.get(module_name):
                     self.timeResult[module_name] = {'worstWorstTime':None,'worstAverageTime':None,
                                                     'bestAverageTime':None,'bestBestTime':None,
-                                                    'wwtModule':0,'watModule':0,'batModule':0,'bbtModule':0}
+                                                    'wwtModule':0,'watModule':0,'batModule':0,'bbtModule':0,
+                                                    'diagram_names':[],'diagram_values':[]}
                 path = self.base_addr
                 path = os.path.join(path,"programs",module_name)
                 modules_paramValueRes.append([module_name,path,[]])
@@ -178,6 +184,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
             re += str(self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text()))+' - average Time' + '\n'
             re += str(self.moduleInfo[i]['bestTime'])+' - best Time' + '\n'
             re += '****'+'\n'
+            self.timeResult[module_name]['diagram_values'].append((self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())).total_seconds())
             if self.timeResult[module_name]['worstWorstTime'] == None:
                 self.timeResult[module_name]['worstWorstTime']=self.moduleInfo[i]['worstTime']
                 self.timeResult[module_name]['wwtModule'] = i
@@ -218,9 +225,25 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         # db project modules parametres values results
         rwd.add_([self.label_6.text().split(":")[1].strip(),self.base_addr],modules_paramValueRes)
 
-        self.fill_tree()
+        # self.fill_tree()
         # info = resource.getrusage(resource.RUSAGE_CHILDREN)
         # print(info)
+
+        fig = plt.figure()
+        mpl.rcParams.update({'font.size': 10})
+        plt.title('Average time')
+
+        ax = plt.axes()
+        ax.yaxis.grid(True, zorder = 1)
+
+        xs = range(len(self.timeResult[module_name]['diagram_names']))
+
+        plt.bar(xs, self.timeResult[module_name]['diagram_values'],
+                width = 0.8, color = 'orange', zorder = 2)
+        plt.xticks(xs, self.timeResult[module_name]['diagram_names'])
+
+        fig.autofmt_xdate(rotation = 25)
+        plt.show()
 
     def buttonClicked_del(self):
         mb = QMessageBox()
@@ -254,7 +277,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
             outText = []
             for line in f:
                 if line.find("=") != -1:
-                    line = line.split('=')
+                    line = line.split('=',1)
                     # if line[0][:2]=="V_":
                     if line[0].lstrip()[0] != '#':
                         outText.append([line[0].strip(),line[1].strip()])
@@ -267,7 +290,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                 outText = []
                 for line in f:
                     if line.find("=") != -1:
-                        line = line.split('=')
+                        line = line.split('=',1)
                         if line[0].lstrip()[0] != '#':
                             outText.append([line[0].strip(),line[1].strip()])
                 f.close()
@@ -279,7 +302,9 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.curInd = int(str(self.form.sender().objectName())[3:])
         outText = self.gridElementOfInput[self.curInd][3].toPlainText().split('\n')
         for j in range(len(outText)):
-            outText[j] = outText[j].split('=')
+            outText[j] = outText[j].split('=',1)
+            # if len(outText[j] > 2):
+            #     outText[j][1] = '='.join(outText[j][1:])
         self.window_param.show()
         self.ui_param.set_param(outText)
 
@@ -317,12 +342,12 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                 self.gridElementOfInput[self.numb-1][4].setText(self.gridElementOfInput[self.curInd][4].text())
                 strings = self.gridElementOfInput[self.curInd][3].toPlainText().split('\n')
                 for numb in mas[0][1]:
-                    temp = strings[numb].split('=')
+                    temp = strings[numb].split('=',1)
                     temp[1] = ''
                     strings[numb] = '='.join(temp)
                 for j in range(numbFl):
                     if i&(0b1 << j):
-                        temp = strings[mas[1][j]['number']].split('=')
+                        temp = strings[mas[1][j]['number']].split('=',1)
                         temp[1] += mas[1][j]['param'] + ' '
                         strings[mas[1][j]['number']] = '='.join(temp)
                 self.gridElementOfInput[self.numb-1][3].clear()
@@ -427,6 +452,13 @@ class Param(Ui_Form_param, QObject):
         for i in range(len(self.mas)):
             if self.mas[i][2].isChecked():
                 tempL = list(self.mas[i][1].text().strip().split(' '))
+                k = 0
+                while k < len(tempL):
+                    if tempL[k][0] != '-' and tempL[k][0] != '$':
+                        tempL[k-1] += ' ' + tempL[k]
+                        tempL.remove(tempL[k])
+                    else:
+                        k += 1
                 for j in tempL:
                     combination.append({'number':i,'param':j})
                     combinationIndex.append(i)

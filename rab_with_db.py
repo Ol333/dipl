@@ -134,7 +134,7 @@ def add_(proj,modules_ParamValueRes):
                             """.format(mod[j].replace("'",'"'),"",id_proj,datetime.now().isoformat(sep=' '),datetime.now().replace(microsecond=0).isoformat(sep=' ')))
             id_res = cursor.fetchall()[0][0]
             for PV in mod[2]:
-                param,value = PV.split('=')
+                param,value = PV.split('=',1)
                 cursor.execute("""INSERT INTO "parameter" ("Id","Module_id","Name","Type_value")
                                 VALUES (default,{},'{}','{}')
                                 RETURNING "Id";

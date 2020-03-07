@@ -21,12 +21,12 @@ int main()
     sfmt_init_gen_rand(&sfmt, time(NULL));
     double curPt = U0, t = 0.0;
     FILE *fp = fopen("./out/kin.txt", "w");
-    fprintf(fp, "%lf\t%lf\n", t, curPt);
+    // fprintf(fp, "%lf\t%lf\n", t, curPt);
     register double r, rs;
     register unsigned int j;
     char res;
     struct timespec start, end;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+    // clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     while (curPt > 0.0 && curPt < 1.0) //curPt > 0.0 && curPt < 1.0
     {
         for (i = 0; i < MONOMIAL_COUNT; i++)
@@ -44,10 +44,10 @@ int main()
         }
         t += DT;
         curPt = particleCount / (double)N;
-        fprintf(fp, "%lf\t%lf\n", t, curPt);
+        // fprintf(fp, "%lf\t%lf\n", t, curPt);
     }
-    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-    printf("%lf\n", end.tv_sec-start.tv_sec + 0.000000001*(end.tv_nsec-start.tv_nsec));
+    // clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+    // printf("%lf\n", end.tv_sec-start.tv_sec + 0.000000001*(end.tv_nsec-start.tv_nsec));
     fclose(fp);
     return 0;
 }
