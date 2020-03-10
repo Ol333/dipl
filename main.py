@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import sys
 from PyQt5.QtWidgets import (QWidget, QPushButton, QLineEdit, QCheckBox,
-QGridLayout, QInputDialog, QApplication, QMessageBox, QTextEdit,
+QGridLayout, QInputDialog, QApplication, QMessageBox, QTextEdit, QRadioButton,
 QGroupBox, QScrollArea, QLabel, QHBoxLayout, QMainWindow,
 QAction, QFileDialog)
 import subprocess
@@ -78,8 +78,10 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         s = ""
         mas_paramValue = []
         for line in f:
-            if masChange[counter].strip().split(' ')[0]=="RANDFLAGS":
-                self.timeResult[os.path.split(path)[-1]]['diagram_names'].append(masChange[counter])
+            if masChange[counter].strip().split(' ')[0]=="CONSTFLAGS":
+                self.timeResult[os.path.split(path)[-1]]['diagram_names'].append(masChange[counter].strip().split(' ')[-1])
+            elif masChange[counter].strip().split(' ')[0]=="RANDFLAGS":
+                self.timeResult[os.path.split(path)[-1]]['diagram_names'][-1] += '\n' + masChange[counter]
             s += line.replace(self.moduleInfo[i]['originParam'][counter][0]+' = '+self.moduleInfo[i]['originParam'][counter][1], masChange[counter].strip())
             if counter+1 != len(masChange):
                 mas_paramValue.append(masChange[counter].strip())
@@ -234,15 +236,20 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         plt.title('Average time')
 
         ax = plt.axes()
-        ax.yaxis.grid(True, zorder = 1)
+        ax.xaxis.grid(True, zorder = 1)
 
-        xs = range(len(self.timeResult[module_name]['diagram_names']))
+        col_vo_const_fl = int(len(self.timeResult[module_name]['diagram_names'])/32)
 
-        plt.bar(xs, self.timeResult[module_name]['diagram_values'],
-                width = 0.8, color = 'orange', zorder = 2)
-        plt.xticks(xs, self.timeResult[module_name]['diagram_names'])
+        xs = range(32)
+        for i in range(col_vo_const_fl):
+            plt.barh([x + 0.05 + (0.9 / col_vo_const_fl)*i for x in xs],
+                    self.timeResult[module_name]['diagram_values'][32*i:32*(i+1)],
+                    height = (0.9 / col_vo_const_fl), color = [(0.12*(i%3))/1,(0.12*(i%3+1))/1,(0.12*(i%3+2))/1],
+                    label = self.timeResult[module_name]['diagram_names'][32*i].split('\n')[0], zorder = 2)
 
-        fig.autofmt_xdate(rotation = 25)
+        plt.yticks(xs, list(map(lambda x:x.split('\n')[1],self.timeResult[module_name]['diagram_names'][:32])))
+
+        plt.legend(loc='upper right')
         plt.show()
 
     def buttonClicked_del(self):
@@ -335,24 +342,29 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
             self.gridElementOfInput[self.curInd][3].append(i)
 
         if mas[0][0] == 'someone want a combination':
-            numbFl = len(mas[1])
-            for i in range(2**numbFl-1):
-                self.buttonClicked_addModule()
-                self.gridElementOfInput[self.numb-1][1].setText(self.gridElementOfInput[self.curInd][1].text())
-                self.gridElementOfInput[self.numb-1][4].setText(self.gridElementOfInput[self.curInd][4].text())
-                strings = self.gridElementOfInput[self.curInd][3].toPlainText().split('\n')
-                for numb in mas[0][1]:
-                    temp = strings[numb].split('=',1)
-                    temp[1] = ''
-                    strings[numb] = '='.join(temp)
-                for j in range(numbFl):
-                    if i&(0b1 << j):
-                        temp = strings[mas[1][j]['number']].split('=',1)
-                        temp[1] += mas[1][j]['param'] + ' '
-                        strings[mas[1][j]['number']] = '='.join(temp)
-                self.gridElementOfInput[self.numb-1][3].clear()
-                for i in strings:
-                    self.gridElementOfInput[self.numb-1][3].append(i.strip())
+            for k in range(1 if len(mas[1][1])==0 else len(mas[1][1][0]['param'])+1): #перебор по одному
+                numbFl = len(mas[1][0])
+                for i in range(2**numbFl-1): #перебор всех возможных комбинаций
+                    self.buttonClicked_addModule()
+                    self.gridElementOfInput[self.numb-1][1].setText(self.gridElementOfInput[self.curInd][1].text())
+                    self.gridElementOfInput[self.numb-1][4].setText(self.gridElementOfInput[self.curInd][4].text())
+                    strings = self.gridElementOfInput[self.curInd][3].toPlainText().split('\n')
+                    for numb in mas[0][1]:
+                        temp = strings[numb].split('=',1)
+                        temp[1] = ''
+                        strings[numb] = '='.join(temp)
+                    if len(mas[1][1]) != 0:
+                        temp = strings[mas[1][1][0]['number']].split('=',1)
+                        temp[1] = (mas[1][1][0]['param'][k] if k<len(mas[1][1][0]['param']) else '')
+                        strings[mas[1][1][0]['number']] = '='.join(temp)
+                    for j in range(numbFl):
+                        if i&(0b1 << j):
+                            temp = strings[mas[1][0][j]['number']].split('=',1)
+                            temp[1] += mas[1][0][j]['param'] + ' '
+                            strings[mas[1][0][j]['number']] = '='.join(temp)
+                    self.gridElementOfInput[self.numb-1][3].clear()
+                    for i in strings:
+                        self.gridElementOfInput[self.numb-1][3].append(i.strip())
 
     def buttonClicked_addModule(self):
         self.gridElementOfInput.append([QLabel(str(self.numb + 1)),QLineEdit(),
@@ -449,7 +461,11 @@ class Param(Ui_Form_param, QObject):
     def buttonClicked_accept(self):
         combination = []
         combinationIndex = []
+        search_one_by_one = []
         for i in range(len(self.mas)):
+            if self.mas[i][3].isChecked():
+                tempL = list(self.mas[i][1].text().strip().split('='))
+                search_one_by_one.append({'number':i,'param':tempL[1][1:-1].split(';')})
             if self.mas[i][2].isChecked():
                 tempL = list(self.mas[i][1].text().strip().split(' '))
                 k = 0
@@ -462,9 +478,9 @@ class Param(Ui_Form_param, QObject):
                 for j in tempL:
                     combination.append({'number':i,'param':j})
                     combinationIndex.append(i)
-        if len(combination) > 0:
+        if len(combination) > 0 or len(search_one_by_one) > 0:
             self.outMas.append(['someone want a combination',combinationIndex])
-            self.outMas.append(combination)
+            self.outMas.append([combination,search_one_by_one])
         else:
             self.outMas.append(['',])
             self.outMas.append(list())
@@ -488,10 +504,11 @@ class Param(Ui_Form_param, QObject):
             self.lay.itemAt(i).widget().close()
 
         for i in range(len(list_param)):
-            self.mas.append([QLabel(list_param[i][0]),QLineEdit(),QCheckBox()])
+            self.mas.append([QLabel(list_param[i][0]),QLineEdit(),QCheckBox(),QRadioButton()])
             self.lay.addWidget(self.mas[i][0],i,0,1,1)
             self.lay.addWidget(self.mas[i][1],i,1,1,1)
             self.lay.addWidget(self.mas[i][2],i,2,1,1)
+            self.lay.addWidget(self.mas[i][3],i,3,1,1)
             self.mas[i][1].setText(list_param[i][1])
         # self.outMas = list(map(lambda x: [x[0] + ' = ' + x[1]], list_param))
         self.outMas = list()

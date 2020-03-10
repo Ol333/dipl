@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>401</width>
-    <height>310</height>
+    <height>366</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,9 +17,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>30</y>
+     <y>50</y>
      <width>381</width>
-     <height>201</height>
+     <height>221</height>
     </rect>
    </property>
    <property name="widgetResizable">
@@ -31,7 +31,7 @@
       <x>0</x>
       <y>0</y>
       <width>379</width>
-      <height>199</height>
+      <height>219</height>
      </rect>
     </property>
    </widget>
@@ -40,7 +40,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>10</y>
+     <y>20</y>
      <width>81</width>
      <height>17</height>
     </rect>
@@ -53,7 +53,7 @@
    <property name="geometry">
     <rect>
      <x>210</x>
-     <y>10</y>
+     <y>20</y>
      <width>64</width>
      <height>17</height>
     </rect>
@@ -66,7 +66,7 @@
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>280</y>
+     <y>340</y>
      <width>166</width>
      <height>25</height>
     </rect>
@@ -79,9 +79,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>230</y>
+     <y>270</y>
      <width>381</width>
-     <height>41</height>
+     <height>61</height>
     </rect>
    </property>
    <property name="font">
@@ -93,20 +93,36 @@
    <property name="text">
     <string>if the parameter you need is not displayed 
 please contact the author
-check group field for parameter's value combination</string>
+check 'group' field for parameter's value combination
+check 'one by one' field for searching parameter's value one by one</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_7">
    <property name="geometry">
     <rect>
-     <x>340</x>
-     <y>10</y>
+     <x>310</x>
+     <y>20</y>
      <width>41</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
     <string>group</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>350</x>
+     <y>10</y>
+     <width>31</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>one 
+by
+ one</string>
    </property>
   </widget>
  </widget>
