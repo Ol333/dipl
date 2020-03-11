@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import sys
 from PyQt5.QtWidgets import (QWidget, QPushButton, QLineEdit, QCheckBox,
 QGridLayout, QInputDialog, QApplication, QMessageBox, QTextEdit, QRadioButton,
@@ -181,34 +181,34 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                         modules_paramValueRes[-1].append(loc_re)
                         re += "\n №№" + str(j)+' '+loc_re
 
-            re += '****'+'\n'
-            re += str(self.moduleInfo[i]['worstTime'])+' - worst Time' + '\n'
-            re += str(self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text()))+' - average Time' + '\n'
-            re += str(self.moduleInfo[i]['bestTime'])+' - best Time' + '\n'
-            re += '****'+'\n'
-            self.timeResult[module_name]['diagram_values'].append((self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())).total_seconds())
-            if self.timeResult[module_name]['worstWorstTime'] == None:
-                self.timeResult[module_name]['worstWorstTime']=self.moduleInfo[i]['worstTime']
-                self.timeResult[module_name]['wwtModule'] = i
-                self.timeResult[module_name]['worstAverageTime']=self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())
-                self.timeResult[module_name]['watModule'] = i
-                self.timeResult[module_name]['bestAverageTime']=self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())
-                self.timeResult[module_name]['batModule'] = i
-                self.timeResult[module_name]['bestBestTime']=self.moduleInfo[i]['bestTime']
-                self.timeResult[module_name]['bbtModule'] = i
-            else:
-                if self.timeResult[module_name]['worstWorstTime'] < self.moduleInfo[i]['worstTime']:
-                    self.timeResult[module_name]['worstWorstTime'] = self.moduleInfo[i]['worstTime']
-                    self.timeResult[module_name]['wwtModule']=i
-                if self.timeResult[module_name]['worstAverageTime'] < self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text()):
-                    self.timeResult[module_name]['worstAverageTime'] = self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())
-                    self.timeResult[module_name]['watModule']=i
-                if self.timeResult[module_name]['bestAverageTime'] > self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text()):
-                    self.timeResult[module_name]['bestAverageTime'] = self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())
-                    self.timeResult[module_name]['batModule']=i
-                if self.timeResult[module_name]['bestBestTime'] > self.moduleInfo[i]['bestTime']:
-                    self.timeResult[module_name]['bestBestTime'] = self.moduleInfo[i]['bestTime']
-                    self.timeResult[module_name]['bbtModule']=i
+                re += '****'+'\n'
+                re += str(self.moduleInfo[i]['worstTime'])+' - worst Time' + '\n'
+                re += str(self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text()))+' - average Time' + '\n'
+                re += str(self.moduleInfo[i]['bestTime'])+' - best Time' + '\n'
+                re += '****'+'\n'
+                self.timeResult[module_name]['diagram_values'].append((self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())).total_seconds())
+                if self.timeResult[module_name]['worstWorstTime'] == None:
+                    self.timeResult[module_name]['worstWorstTime']=self.moduleInfo[i]['worstTime']
+                    self.timeResult[module_name]['wwtModule'] = i
+                    self.timeResult[module_name]['worstAverageTime']=self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())
+                    self.timeResult[module_name]['watModule'] = i
+                    self.timeResult[module_name]['bestAverageTime']=self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())
+                    self.timeResult[module_name]['batModule'] = i
+                    self.timeResult[module_name]['bestBestTime']=self.moduleInfo[i]['bestTime']
+                    self.timeResult[module_name]['bbtModule'] = i
+                else:
+                    if self.timeResult[module_name]['worstWorstTime'] < self.moduleInfo[i]['worstTime']:
+                        self.timeResult[module_name]['worstWorstTime'] = self.moduleInfo[i]['worstTime']
+                        self.timeResult[module_name]['wwtModule']=i
+                    if self.timeResult[module_name]['worstAverageTime'] < self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text()):
+                        self.timeResult[module_name]['worstAverageTime'] = self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())
+                        self.timeResult[module_name]['watModule']=i
+                    if self.timeResult[module_name]['bestAverageTime'] > self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text()):
+                        self.timeResult[module_name]['bestAverageTime'] = self.moduleInfo[i]['sumTime']/int(self.gridElementOfInput[i][4].text())
+                        self.timeResult[module_name]['batModule']=i
+                    if self.timeResult[module_name]['bestBestTime'] > self.moduleInfo[i]['bestTime']:
+                        self.timeResult[module_name]['bestBestTime'] = self.moduleInfo[i]['bestTime']
+                        self.timeResult[module_name]['bbtModule']=i
 
         for mod in self.timeResult.keys():
             re += '#######'+'\n'
@@ -221,6 +221,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
             re += 'best average Time module №:  ' + str(self.timeResult[mod]['batModule']+1)+'\n'
             re += str(self.timeResult[mod]['bestBestTime'])+' - best best Time' + '\n'
             re += 'best best Time module №:  ' + str(self.timeResult[mod]['bbtModule']+1)+'\n'
+        re += '\n'.join(list(map(lambda x:str(self.timeResult[module_name]['diagram_names'][:32].index(x)+1)+' '+str(x.split('\n')[1]),self.timeResult[module_name]['diagram_names'][:32])))
         self.ui_output.setText(str(re))
         self.window_output.show()
 
@@ -233,7 +234,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
 
         fig = plt.figure()
         mpl.rcParams.update({'font.size': 10})
-        plt.title('Average time')
+        plt.title('Среднее время выполнения программы')
 
         ax = plt.axes()
         ax.xaxis.grid(True, zorder = 1)
@@ -241,7 +242,6 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         tempN = 32
 
         col_vo_const_fl = int(len(self.timeResult[module_name]['diagram_names'])/tempN)
-        print(self.timeResult[module_name]['diagram_names'])
 
         xs = range(tempN)
         for i in range(col_vo_const_fl):
@@ -251,7 +251,8 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                     label = (self.timeResult[module_name]['diagram_names'][tempN*i].split('\n')[0] if self.timeResult[module_name]['diagram_names'][tempN*i].split('\n')[0] != '' else '-'),
                     zorder = 2)
 
-        plt.yticks(xs, list(map(lambda x:x.split('\n')[1],self.timeResult[module_name]['diagram_names'][:tempN])))
+        plt.yticks(xs,range(1,tempN+1))
+        # plt.yticks(xs, list(map(lambda x:x.split('\n')[1],self.timeResult[module_name]['diagram_names'][:tempN])))
 
         plt.legend(loc='upper right')
         plt.show()
@@ -264,6 +265,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         for i in range(len(self.gridElementOfInput[ind])):
             # print(self.lay.itemAtPosition(ind,i).widget())
             # self.lay.removeWidget(i)
+            self.gridElementOfInput[ind][i].setEnabled(False)
             self.lay.itemAtPosition(ind,i).widget().hide()
             # i.deleteLater()
         # self.gridElementOfInput.remove(self.gridElementOfInput[ind])
@@ -373,6 +375,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                     for i in strings:
                         self.gridElementOfInput[self.numb-1][3].append(i.strip())
             for i in range(len(self.gridElementOfInput[self.curInd])):
+                self.gridElementOfInput[self.curInd][i].setEnabled(False)
                 self.lay.itemAtPosition(self.curInd,i).widget().hide()
 
     def buttonClicked_addModule(self):

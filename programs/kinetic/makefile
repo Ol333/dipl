@@ -10,8 +10,7 @@ V_POWERS = {1,2,3,4,6}
 
 EPSVIEWER = atril
 
-CC = gcc./kinetic
-
+CC = gcc
 VECFLAGS = -ftree-vectorize -fopt-info-vec-optimized
 CONSTFLAGS = -march=native
 RANDFLAGS = -msse2 -finline-functions -fomit-frame-pointer -fno-strict-aliasing --param max-inline-insns-single=1800
