@@ -72,24 +72,24 @@ def create_db_tables():
     connection.commit()
 
 
-array=[] #считываем параметры
-with open('postgres_settings.txt', 'r') as f:
-    array = [row.strip().split('"')[1] for row in f]
-try: #подключаемся к бд
-    connection = psycopg2.connect(dbname=array[0], user=array[1],
-                    password=array[2], host=array[3])
-    print("PostgreSQL connection is open " + datetime.now().isoformat(sep=' ')+'\n')
-    cursor = connection.cursor()
-
-    cursor.execute('SELECT "table_name" FROM information_schema.tables;')
-    set_of_tables = set()
-    for a in cursor.fetchall():
-        set_of_tables.add(a[0])
-    if not set(["project","module","parameter","result","value"]).issubset(set_of_tables):
-        print(set_of_tables)
-        create_db_tables()
-except(Exception, psycopg2.Error) as error:
-    print("Connection error "+str(error)+' ' + datetime.now().isoformat(sep=' ')+'\n')
+# array=[] #считываем параметры
+# with open('postgres_settings.txt', 'r') as f:
+#     array = [row.strip().split('"')[1] for row in f]
+# try: #подключаемся к бд
+#     connection = psycopg2.connect(dbname=array[0], user=array[1],
+#                     password=array[2], host=array[3])
+#     print("PostgreSQL connection is open " + datetime.now().isoformat(sep=' ')+'\n')
+#     cursor = connection.cursor()
+#
+#     cursor.execute('SELECT "table_name" FROM information_schema.tables;')
+#     set_of_tables = set()
+#     for a in cursor.fetchall():
+#         set_of_tables.add(a[0])
+#     if not set(["project","module","parameter","result","value"]).issubset(set_of_tables):
+#         print(set_of_tables)
+#         create_db_tables()
+# except(Exception, psycopg2.Error) as error:
+#     print("Connection error "+str(error)+' ' + datetime.now().isoformat(sep=' ')+'\n')
 
 
 

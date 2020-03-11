@@ -79,7 +79,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         mas_paramValue = []
         for line in f:
             if masChange[counter].strip().split(' ')[0]=="CONSTFLAGS":
-                self.timeResult[os.path.split(path)[-1]]['diagram_names'].append(masChange[counter].strip().split(' ')[-1])
+                self.timeResult[os.path.split(path)[-1]]['diagram_names'].append(masChange[counter].strip().split('=',1)[1])
             elif masChange[counter].strip().split(' ')[0]=="RANDFLAGS":
                 self.timeResult[os.path.split(path)[-1]]['diagram_names'][-1] += '\n' + masChange[counter]
             s += line.replace(self.moduleInfo[i]['originParam'][counter][0]+' = '+self.moduleInfo[i]['originParam'][counter][1], masChange[counter].strip())
@@ -225,7 +225,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.window_output.show()
 
         # db project modules parametres values results
-        rwd.add_([self.label_6.text().split(":")[1].strip(),self.base_addr],modules_paramValueRes)
+        ####бд#### rwd.add_([self.label_6.text().split(":")[1].strip(),self.base_addr],modules_paramValueRes)
 
         # self.fill_tree()
         # info = resource.getrusage(resource.RUSAGE_CHILDREN)
@@ -238,16 +238,20 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         ax = plt.axes()
         ax.xaxis.grid(True, zorder = 1)
 
-        col_vo_const_fl = int(len(self.timeResult[module_name]['diagram_names'])/32)
+        tempN = 32
 
-        xs = range(32)
+        col_vo_const_fl = int(len(self.timeResult[module_name]['diagram_names'])/tempN)
+        print(self.timeResult[module_name]['diagram_names'])
+
+        xs = range(tempN)
         for i in range(col_vo_const_fl):
             plt.barh([x + 0.05 + (0.9 / col_vo_const_fl)*i for x in xs],
-                    self.timeResult[module_name]['diagram_values'][32*i:32*(i+1)],
+                    self.timeResult[module_name]['diagram_values'][tempN*i:tempN*(i+1)],
                     height = (0.9 / col_vo_const_fl), color = [(0.12*(i%3))/1,(0.12*(i%3+1))/1,(0.12*(i%3+2))/1],
-                    label = self.timeResult[module_name]['diagram_names'][32*i].split('\n')[0], zorder = 2)
+                    label = (self.timeResult[module_name]['diagram_names'][tempN*i].split('\n')[0] if self.timeResult[module_name]['diagram_names'][tempN*i].split('\n')[0] != '' else '-'),
+                    zorder = 2)
 
-        plt.yticks(xs, list(map(lambda x:x.split('\n')[1],self.timeResult[module_name]['diagram_names'][:32])))
+        plt.yticks(xs, list(map(lambda x:x.split('\n')[1],self.timeResult[module_name]['diagram_names'][:tempN])))
 
         plt.legend(loc='upper right')
         plt.show()
@@ -344,7 +348,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         if mas[0][0] == 'someone want a combination':
             for k in range(1 if len(mas[1][1])==0 else len(mas[1][1][0]['param'])+1): #перебор по одному
                 numbFl = len(mas[1][0])
-                for i in range(2**numbFl-1): #перебор всех возможных комбинаций
+                for i in range(2**numbFl): #перебор всех возможных комбинаций
                     self.buttonClicked_addModule()
                     self.gridElementOfInput[self.numb-1][1].setText(self.gridElementOfInput[self.curInd][1].text())
                     self.gridElementOfInput[self.numb-1][4].setText(self.gridElementOfInput[self.curInd][4].text())
@@ -354,9 +358,12 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                         temp[1] = ''
                         strings[numb] = '='.join(temp)
                     if len(mas[1][1]) != 0:
-                        temp = strings[mas[1][1][0]['number']].split('=',1)
-                        temp[1] = (mas[1][1][0]['param'][k] if k<len(mas[1][1][0]['param']) else '')
-                        strings[mas[1][1][0]['number']] = '='.join(temp)
+                        temp = strings[mas[1][1][0]['number']].split('=',2)
+                        if k<len(mas[1][1][0]['param']):
+                            temp[2] = mas[1][1][0]['param'][k]
+                            strings[mas[1][1][0]['number']] = '='.join(temp)
+                        else:
+                            strings[mas[1][1][0]['number']] = temp[0] + '='
                     for j in range(numbFl):
                         if i&(0b1 << j):
                             temp = strings[mas[1][0][j]['number']].split('=',1)
@@ -365,9 +372,11 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                     self.gridElementOfInput[self.numb-1][3].clear()
                     for i in strings:
                         self.gridElementOfInput[self.numb-1][3].append(i.strip())
+            for i in range(len(self.gridElementOfInput[self.curInd])):
+                self.lay.itemAtPosition(self.curInd,i).widget().hide()
 
     def buttonClicked_addModule(self):
-        self.gridElementOfInput.append([QLabel(str(self.numb + 1)),QLineEdit(),
+        self.gridElementOfInput.append([QLabel(str(self.numb)),QLineEdit(),
                                         QPushButton("Change \nparameters"),QTextEdit(),QLineEdit(),
                                         QLineEdit(),QPushButton("Delete")])
         self.moduleInfo.append({'originParam':None,'worstTime':None,'bestTime':None,'sumTime':0})
