@@ -140,3 +140,64 @@ class ModuleTime():
 
     def get_best_time(self,ind):
         return self.moduleInfo[ind]['bestTime']
+
+def add_(proj,modules_ParamValueRes,rwd):
+    mas_of_mod_and_its_val = []
+    fl_mod = True
+    for mod in modules_ParamValueRes:
+        mas_module = rwd.select_module(mod[0],mod[1])
+        if mas_module:
+            # модуль уже есть (и не один мб)
+            mod_ind = 0
+            while fl_mod and mod_ind < len(mas_module):
+                fl_param = True
+                pv_ind = 0
+                mas_param_id = []
+                while fl_param and pv_ind < len(mod[2]):
+                    param,value = mod[2][pv_ind].split('=',1)
+                    id_param = rwd.select_param(mas_module[mod_ind],param.strip(),"string") #эээээ стринг?
+                    if id_param == None:
+                        fl_param = False
+                    else:
+                        mas_param_id.append(id_param)
+                    pv_ind += 1
+                if fl_param:
+                    pv_ind = 0
+                    mas_of_mod_and_its_val.append([mas_module[mod_ind],[],mod[-2],mod[-1]])
+                    while pv_ind < len(mod[2]):
+                        param,value = mod[2][pv_ind].split('=',1)
+                        mas_of_mod_and_its_val[-1][1].append([mas_param_id[pv_ind],value.strip().strip("'")])
+                        pv_ind += 1
+                    fl_mod = False
+                mod_ind += 1
+        # модуля нет или ни один не совпадает
+        if fl_mod:
+            id_mod = rwd.insert_module(mod[0],mod[1])
+            mas_of_mod_and_its_val.append([id_mod,[],mod[-2],mod[-1]])
+            for PV in mod[2]:
+                param,value = PV.split('=',1)
+                id_param = rwd.insert_param(id_mod,param.strip(),"string")
+                mas_of_mod_and_its_val[-1][1].append([id_param,value.strip().strip("'")])
+    # перебрали все модули
+    id_proj = rwd.select_proj(proj[0],proj[1])
+    if id_proj != None:
+        # проверить привязки
+        mas_safe_module = rwd.select_binding(id_proj)
+        if (len(mas_safe_module) == len(mas_of_mod_and_its_val)):
+            for m in mas_of_mod_and_its_val:
+                if m[0] in mas_safe_module:
+                    mas_safe_module.remove(m[0])
+            if len(mas_safe_module) != 0:
+                id_proj = rwd.insert_proj(proj[0],proj[1])
+    else:
+        id_proj = rwd.insert_proj(proj[0],proj[1])
+    # создать результат и привязки
+    for m in mas_of_mod_and_its_val:
+        id_binding = rwd.insert_binding(m[2],m[3],id_proj,m[0])
+        mas_of_values = []
+        for pv in m[1]:
+            mas_of_values.append([pv[0],pv[1],id_binding])
+        rwd.insert_few_value(mas_of_values)
+    # rwd.insert_res(proj[1],proj[2],id_proj)
+    rwd.insert_res(proj[1],proj[3],id_proj)
+    rwd.connection.commit()

@@ -17,7 +17,7 @@ from PyQt5.QtGui import QStandardItemModel,QStandardItem
 from ui import Ui_MainWindow
 from param import Ui_Form_param
 from output import Ui_Form_out
-import rab_with_db as rwd
+import rab_with_db
 import logic as lgc
 
 class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
@@ -44,6 +44,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.buttonClicked_addModule()
         self.scrollAreaWidgetContents.setLayout(self.lay)
         self.scrollArea.setAlignment(Qt.AlignBottom)
+        self.rwd = rab_with_db.DbWork()
 
     def showDialog_createProject(self):
         qwe1 = QWidget()
@@ -57,8 +58,8 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                 # for somethinf in path add modules
 
     def delete_and_create_db_tables(self): # only for development
-        rwd.delete_db_tables()
-        rwd.create_db_tables()
+        self.rwd.delete_db_tables()
+        self.rwd.create_db_tables()
         self.fill_tree()
 
     def connect_slots(self):
@@ -101,8 +102,8 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
             return(self.execute_with_python(i,path,module_name))
 
     def execute_with_makefile(self,i,path,module_name):
-        res_list = [[],[]]
-        res_list[0].extend(self.set_and_safe_one_modul_params(i,"makefile",path))
+        res_list = []
+        res_list.extend(self.set_and_safe_one_modul_params(i,"makefile",path))
         # запустить
         re = ''
         re += "\n №" + str(i)
@@ -119,14 +120,13 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
             self.moduleInfo.test_time_values(i,j,t)
             some_str = some_str.decode()
             loc_re += some_str
-            res_list[1].append(loc_re)
             re += "\n №№" + str(j)+' '+loc_re
         os.remove('temporary_new_file')
         return (res_list,re)
 
     def execute_with_parameters(self,i,path,module_name):
-        res_list = [[],[]]
-        res_list[0].extend(self.set_and_safe_one_modul_params(i,"parameters",path))
+        res_list = []
+        res_list.extend(self.set_and_safe_one_modul_params(i,"parameters",path))
         re = ''
         re += "\n №" + str(i)
         for j in range(int(self.gridElementOfInput[i][4].text())):
@@ -140,13 +140,12 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
             # some_str = some_str.decode()
             # print(some_str,"@@@@@")
             # loc_re += some_str+"\n"
-            res_list[1].append(loc_re)
             re += "\n №№" + str(j)+' '+loc_re
         os.remove('temporary_new_file')
         return (res_list,re)
 
     def execute_with_python(self,i,path,module_name):
-        res_list = [[],[]]
+        res_list = []
         re = ''
         re += "\n №" + str(i)
         for j in range(int(self.gridElementOfInput[i][4].text())):
@@ -157,7 +156,6 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
             t = datetime.now()-start_time
             self.moduleInfo.test_time_values(i,j,t)
             ar.extend(self.gridElementOfInput[i][3].toPlainText().split(' '))
-            res_list[1].append(loc_re)
             re += "\n №№" + str(j)+' '+loc_re
         return (res_list,re)
 
@@ -177,8 +175,9 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                 os.chdir(path)                              # меняем директорию
 
                 res_list,res = self.execute_one_module(i,path,module_name)
-                modules_paramValueRes[-1][-1].extend(res_list[0])
-                modules_paramValueRes[-1].extend(res_list[1])
+                modules_paramValueRes[-1][-1].extend(res_list)
+                modules_paramValueRes[-1].append(self.gridElementOfInput[i][0].text())#numb
+                modules_paramValueRes[-1].append(self.gridElementOfInput[i][4].text())#count
                 re += res
                 aver_time = self.moduleInfo.aver_time(i,
                     int(self.gridElementOfInput[i][4].text()))
@@ -191,39 +190,47 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                                             aver_time,
                                             self.moduleInfo.get_best_time(i),
                                             i)
-        re += self.timeResult.modules_res()
-        list_of_flags = self.timeResult.list_flags_name(module_name,32)
-        temp_list = list(map(lambda x:str(list_of_flags.index(x)+1)+' '+
-                                          str(x.split('\n')[1]),
-                             list_of_flags))
-        re += '\n'.join(temp_list)
+        # re += self.timeResult.modules_res()
+        # list_of_flags = self.timeResult.list_flags_name(module_name,32)
+        # temp_list = list(map(lambda x:str(list_of_flags.index(x)+1)+' '+
+        #                                   str(x.split('\n')[1]),
+        #                      list_of_flags))
+        # re += '\n'.join(temp_list)
         self.ui_output.setText(str(re))
         self.window_output.show()
-
-        # db project modules parametres values results
-        ####бд#### rwd.add_([self.label_6.text().split(":")[1].strip(),self.base_addr],modules_paramValueRes)
-
-        fig = plt.figure()
-        mpl.rcParams.update({'font.size': 10})
-        plt.title('Среднее время выполнения программы')
-
-        ax = plt.axes()
-        ax.xaxis.grid(True, zorder = 1)
-
-        tempN = 32
-        col_vo_const_fl = self.timeResult.col_vo_const_fl(module_name,tempN)
-
-        xs = range(tempN)
-        for i in range(col_vo_const_fl):
-            plt.barh([x + 0.05 + (0.9 / col_vo_const_fl)*i for x in xs],
-                    self.timeResult.take_list_cut(module_name,tempN,i),
-                    height=(0.9 / col_vo_const_fl),
-                    color=[(0.12*(i%3))/1,(0.12*(i%3+1))/1,(0.12*(i%3+2))/1],
-                    label=self.timeResult.list_for_label(module_name,tempN,i),
-                    zorder=2)
-        plt.yticks(xs,range(1,tempN+1))
-        plt.legend(loc='upper right')
-        plt.show()
+        #
+        #
+        # fig = plt.figure()
+        # mpl.rcParams.update({'font.size': 10})
+        # plt.title('Среднее время выполнения программы')
+        #
+        # ax = plt.axes()
+        # ax.xaxis.grid(True, zorder = 1)
+        #
+        # tempN = 32
+        # col_vo_const_fl = self.timeResult.col_vo_const_fl(module_name,tempN)
+        #
+        # xs = range(tempN)
+        # for i in range(col_vo_const_fl):
+        #     plt.barh([x + 0.05 + (0.9 / col_vo_const_fl)*i for x in xs],
+        #             self.timeResult.take_list_cut(module_name,tempN,i),
+        #             height=(0.9 / col_vo_const_fl),
+        #             color=[(0.12*(i%3))/1,(0.12*(i%3+1))/1,(0.12*(i%3+2))/1],
+        #             label=self.timeResult.list_for_label(module_name,tempN,i),
+        #             zorder=2)
+        # plt.yticks(xs,range(1,tempN+1))
+        # plt.legend(loc='upper right')
+        # plt.show()
+        #
+        #
+        # # save pyplot
+        # fig.savefig("res_"+self.label_6.text().split(":")[1].strip()+'.png')
+        # save txt
+        f_new = open(os.path.join(self.base_addr,"res_"+self.label_6.text().split(":")[1].strip()+'.txt'),"w")
+        f_new.write(re)
+        f_new.close()
+        # db project modules parametres values results(-)
+        lgc.add_([self.label_6.text().split(":")[1].strip(),self.base_addr,'png','txt'],modules_paramValueRes,self.rwd)
 
     def buttonClicked_del(self):  # hide row
         mb = QMessageBox()
@@ -366,43 +373,43 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
 
         parent = root
 
-        proj = rwd.get_table("project")
-        for pr in proj:
-            old_parent_pr = parent
-            parent.appendRow([QStandardItem("project:"),QStandardItem(str(pr[0])),QStandardItem(str(pr[1])),
-                            QStandardItem(str(pr[2])),QStandardItem(), QStandardItem()])
-            parent = parent.child(parent.rowCount() - 1)
-
-            res = rwd.get_table_by_id("result","Project_id",pr[0])
-            for r in res:
-                old_parent_res = parent
-                parent.appendRow([QStandardItem("result:"),QStandardItem(str(r[0])),QStandardItem(), QStandardItem(str(r[1])),
-                                QStandardItem(str(r[4])),QStandardItem(str(r[5]))])
-                # r[0]
-                parent = parent.child(parent.rowCount() - 1)
-                mod = rwd.get_table_by_id("module","Project_id",pr[0])
-                for m in mod:
-                    old_parent_mod = parent
-                    appRow_wait = [QStandardItem("module:"),QStandardItem(str(m[0])),QStandardItem(str(m[1])),
-                                    QStandardItem(str(m[2])),QStandardItem(), QStandardItem()]
-                    # parent.appendRow([QStandardItem("module:"),QStandardItem(str(m[0])),QStandardItem(str(m[1])),
-                    #                 QStandardItem(str(m[2])),QStandardItem(), QStandardItem()])
-                    param = rwd.get_table_by_id("parameter","Module_id",m[0])
-                    # parent = parent.child(parent.rowCount() - 1)
-                    for p in param:
-                        val = rwd.get_value(p[0],r[0])
-                        if val != None:
-                            if appRow_wait:
-                                parent.appendRow(appRow_wait)
-                                appRow_wait = None
-                                parent = parent.child(parent.rowCount() - 1)
-                            parent.appendRow([QStandardItem("parameter value:"),QStandardItem(str(p[0])),QStandardItem(str(p[2])),
-                                            QStandardItem(str(val[2])),QStandardItem(), QStandardItem()])
-                            # p[1]
-
-                    parent = old_parent_mod
-                parent = old_parent_res
-            parent = old_parent_pr
+        # proj = self.rwd.get_table("project")
+        # for pr in proj:
+        #     old_parent_pr = parent
+        #     parent.appendRow([QStandardItem("project:"),QStandardItem(str(pr[0])),QStandardItem(str(pr[1])),
+        #                     QStandardItem(str(pr[2])),QStandardItem(), QStandardItem()])
+        #     parent = parent.child(parent.rowCount() - 1)
+        #
+        #     res = self.rwd.get_table_by_id("result","Project_id",pr[0])
+        #     for r in res:
+        #         old_parent_res = parent
+        #         parent.appendRow([QStandardItem("result:"),QStandardItem(str(r[0])),QStandardItem(), QStandardItem(str(r[1])),
+        #                         QStandardItem(str(r[4])),QStandardItem(str(r[5]))])
+        #         # r[0]
+        #         parent = parent.child(parent.rowCount() - 1)
+        #         mod = self.rwd.get_table_by_id("module","Project_id",pr[0])
+        #         for m in mod:
+        #             old_parent_mod = parent
+        #             appRow_wait = [QStandardItem("module:"),QStandardItem(str(m[0])),QStandardItem(str(m[1])),
+        #                             QStandardItem(str(m[2])),QStandardItem(), QStandardItem()]
+        #             # parent.appendRow([QStandardItem("module:"),QStandardItem(str(m[0])),QStandardItem(str(m[1])),
+        #             #                 QStandardItem(str(m[2])),QStandardItem(), QStandardItem()])
+        #             param = self.rwd.get_table_by_id("parameter","Module_id",m[0])
+        #             # parent = parent.child(parent.rowCount() - 1)
+        #             for p in param:
+        #                 val = self.rwd.get_value(p[0],r[0])
+        #                 if val != None:
+        #                     if appRow_wait:
+        #                         parent.appendRow(appRow_wait)
+        #                         appRow_wait = None
+        #                         parent = parent.child(parent.rowCount() - 1)
+        #                     parent.appendRow([QStandardItem("parameter value:"),QStandardItem(str(p[0])),QStandardItem(str(p[2])),
+        #                                     QStandardItem(str(val[2])),QStandardItem(), QStandardItem()])
+        #                     # p[1]
+        #
+        #             parent = old_parent_mod
+        #         parent = old_parent_res
+        #     parent = old_parent_pr
 
 class Param(Ui_Form_param, QObject):
     def __init__(self, form, com):
