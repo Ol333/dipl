@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>output</string>
+   <string>Output</string>
   </property>
   <widget class="QTextEdit" name="textEdit">
    <property name="geometry">

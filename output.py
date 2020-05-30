@@ -22,5 +22,5 @@ class Ui_Form_out(object):
 
     def retranslateUi(self, Form_out):
         _translate = QtCore.QCoreApplication.translate
-        Form_out.setWindowTitle(_translate("Form_out", "output"))
+        Form_out.setWindowTitle(_translate("Form_out", "Output"))
 

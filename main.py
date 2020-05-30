@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QLineEdit, QCheckBox,
 QGridLayout, QInputDialog, QApplication, QMessageBox, QTextEdit, QRadioButton,
 QGroupBox, QScrollArea, QLabel, QHBoxLayout, QMainWindow,
 QAction, QFileDialog)
-from PyQt5.QtCore import (QRect, QCoreApplication,pyqtSignal, QObject, Qt)
+from PyQt5.QtCore import (QRect, QCoreApplication,pyqtSignal, QObject, Qt, QTranslator, QLocale)
 from PyQt5.QtGui import QStandardItemModel,QStandardItem
 
 from ui import Ui_MainWindow
@@ -29,7 +29,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
     base_addr = None
     curInd = None
 
-    def __init__(self, form1, com, form2, ui, form3, ui3):
+    def __init__(self, form1, com, form2, ui, form3, ui3, transl, app):
         super().__init__()
         self.window_param = form2
         self.ui_param = ui
@@ -38,7 +38,10 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.window_output = form3
         self.ui_output = ui3
         self.base_addr = os.getcwd()
+        self.transl = transl
+        self.app = app
         self.setupUi(form1)
+        self.window_main = form1
         self.connect_slots()
 
         self.buttonClicked_addModule()
@@ -48,19 +51,36 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
 
     def showDialog_createProject(self):
         qwe1 = QWidget()
-        text1, ok1 = QInputDialog.getText(qwe1, 'new project',
-            'enter new project name:')
+        text1, ok1 = QInputDialog.getText(qwe1, self.tr('new project'),
+            self.tr('enter new project name:'))
         if ok1:
             path = QFileDialog.getExistingDirectory(self.form,
-                'Choose directory of project (press Enter)', self.base_addr)
+                selt.tr('Choose directory of project (press Enter)'), self.base_addr)
             if path:
-                self.label_6.setText(f"project name: {text1}")
+                self.label_6.setText(self.tr(f"project name: {text1}"))
                 # for somethinf in path add modules
 
     def delete_and_create_db_tables(self): # only for development
         self.rwd.delete_db_tables()
         self.rwd.create_db_tables()
         self.fill_tree()
+
+    def translate(self):
+        print(self.actionTranslate.text())
+        # print(self.transl.isEmpty())
+        if self.actionTranslate.text() == "Перевести на английский":
+            self.transl.load('language_en.qm')
+        else:
+            # по какой-то причине, после добавления модуля перестает работать
+            self.transl.load('language_ru.qm')
+        print(self.transl.isEmpty())
+        self.app.installTranslator(self.transl)
+        self.retranslateUi(self.window_main)
+        self.ui_param.retranslateUi(self.window_param)
+        self.ui_output.retranslateUi(self.window_output)
+        for i in self.gridElementOfInput:
+            i[2].setText(self.tr("Change \nparameters"))
+            i[5].setText(self.tr("Delete"))
 
     def connect_slots(self):
         self.pushButton.clicked.connect(self.execute)
@@ -69,6 +89,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.actionNew_project.triggered.connect(self.showDialog_createProject)
         self.actionDelete_db_and_create_new.triggered.connect(self.delete_and_create_db_tables)
         self.pushButton_4.clicked.connect(self.fill_tree)
+        self.actionTranslate.triggered.connect(self.translate)
 
     def set_and_safe_one_modul_params(self,i,file_name,path):
         # изменить док
@@ -160,7 +181,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         return (res_list,re)
 
     def execute(self):
-        if self.label_6.text() == "project name: ...---...":
+        if self.label_6.text() == self.tr("project name: ...---..."):
             self.showDialog_createProject()
         modules_paramValueRes = []
         re = ""
@@ -235,7 +256,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
     def buttonClicked_del(self):  # hide row
         mb = QMessageBox()
         ind = int(str(self.form.sender().objectName())[3:])
-        mb.setText("del "+str(ind))
+        mb.setText(self.tr("del ")+str(ind))
         mb.exec()
         for i in range(len(self.gridElementOfInput[ind])):
             self.gridElementOfInput[ind][i].setEnabled(False)
@@ -334,35 +355,34 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
 
     def buttonClicked_addModule(self):
         self.gridElementOfInput.append([QLabel(str(self.numb)), QLineEdit(),
-                                        QPushButton("Change \nparameters"),
-                                        QTextEdit(), QLineEdit(), QLineEdit(),
-                                        QPushButton("Delete")])
+                                        QPushButton(self.tr("Change \nparameters")),
+                                        QTextEdit(), QLineEdit(),
+                                        QPushButton(self.tr("Delete"))])
         self.moduleInfo.add_module()
         self.gridElementOfInput[self.numb][2].clicked.connect(self.buttonClicked_adp)
-        self.gridElementOfInput[self.numb][6].clicked.connect(self.buttonClicked_del)
+        self.gridElementOfInput[self.numb][5].clicked.connect(self.buttonClicked_del)
         self.gridElementOfInput[self.numb][1].textChanged.connect(self.textLineEditChange)
         self.gridElementOfInput[self.numb][2].setObjectName("adp"+str(self.numb))
-        self.gridElementOfInput[self.numb][6].setObjectName("btn"+str(self.numb))
+        self.gridElementOfInput[self.numb][5].setObjectName("btn"+str(self.numb))
         self.gridElementOfInput[self.numb][1].setObjectName("prNam"+str(self.numb))
         self.gridElementOfInput[self.numb][4].setText("1")
         self.gridElementOfInput[self.numb][2].setEnabled(False)
         self.gridElementOfInput[self.numb][3].setEnabled(False)
         self.gridElementOfInput[self.numb][4].setEnabled(False)
-        self.gridElementOfInput[self.numb][5].setEnabled(False)
         self.gridElementOfInput[self.numb][3].setReadOnly(True)
-        for i in range(7):
+        for i in range(6):
             self.lay.addWidget(self.gridElementOfInput[self.numb][i],self.numb,i,1,1)
         self.numb += 1
 
     def fill_tree(self):
         model = QStandardItemModel(0, 6, None)
         # model.setHorizontalHeaderLabels(['','id', 'name','path/value','date','time'])
-        model.setHeaderData(0, Qt.Horizontal, "")
-        model.setHeaderData(1, Qt.Horizontal, "id")
-        model.setHeaderData(2, Qt.Horizontal, "name")
-        model.setHeaderData(3, Qt.Horizontal, "path/value")
-        model.setHeaderData(4, Qt.Horizontal, "date")
-        model.setHeaderData(5, Qt.Horizontal, "time")
+        model.setHeaderData(0, Qt.Horizontal, self.tr(""))
+        model.setHeaderData(1, Qt.Horizontal, self.tr("id"))
+        model.setHeaderData(2, Qt.Horizontal, self.tr("name"))
+        model.setHeaderData(3, Qt.Horizontal, self.tr("path/value"))
+        model.setHeaderData(4, Qt.Horizontal, self.tr("date"))
+        model.setHeaderData(5, Qt.Horizontal, self.tr("time"))
 
         self.treeView.setModel(model)
         self.treeView.setColumnHidden(1,True)
@@ -500,12 +520,16 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     com = Communicate()
 
+    translator = QTranslator(app)
+    translator.load('language_ru.qm')
+    app.installTranslator(translator)
+
     window = QMainWindow()
     window_param = QWidget()
     window_output = QWidget()
     ui_output = Output(window_output)
     ui_param = Param(window_param, com)
-    ui = Example(window, com, window_param, ui_param, window_output, ui_output)
+    ui = Example(window, com, window_param, ui_param, window_output, ui_output, translator, app)
     window.show()
 
     sys.exit(app.exec_())

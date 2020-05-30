@@ -75,7 +75,7 @@
        <rect>
         <x>260</x>
         <y>370</y>
-        <width>111</width>
+        <width>141</width>
         <height>41</height>
        </rect>
       </property>
@@ -117,51 +117,34 @@
        </palette>
       </property>
       <property name="text">
-       <string>add module</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_5">
-      <property name="geometry">
-       <rect>
-        <x>480</x>
-        <y>10</y>
-        <width>71</width>
-        <height>71</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>names of 
-resalts for 
-future 
-modules</string>
+       <string>Add module</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
-        <x>30</x>
+        <x>40</x>
         <y>30</y>
-        <width>91</width>
+        <width>121</width>
         <height>51</height>
        </rect>
       </property>
       <property name="text">
-       <string>prog's or 
-folder's 
-name</string>
+       <string>Prog's or 
+folder's name</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_4">
       <property name="geometry">
        <rect>
-        <x>400</x>
+        <x>460</x>
         <y>30</y>
         <width>71</width>
         <height>51</height>
        </rect>
       </property>
       <property name="text">
-       <string>number 
+       <string>Number 
 of launchs</string>
       </property>
      </widget>
@@ -181,14 +164,14 @@ of launchs</string>
      <widget class="QLabel" name="label_3">
       <property name="geometry">
        <rect>
-        <x>260</x>
+        <x>280</x>
         <y>40</y>
         <width>91</width>
         <height>41</height>
        </rect>
       </property>
       <property name="text">
-       <string>parameters</string>
+       <string>Parameters</string>
       </property>
      </widget>
      <widget class="QScrollArea" name="scrollArea">
@@ -362,7 +345,7 @@ of launchs</string>
        </rect>
       </property>
       <property name="text">
-       <string>project name: ...---...</string>
+       <string>Project name: ...---...</string>
       </property>
      </widget>
     </widget>
@@ -428,7 +411,7 @@ of launchs</string>
        </rect>
       </property>
       <property name="text">
-       <string>Parameters</string>
+       <string>Modules</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_9">
@@ -472,7 +455,7 @@ of launchs</string>
        </rect>
       </property>
       <property name="text">
-       <string>delete</string>
+       <string>Delete</string>
       </property>
      </widget>
     </widget>
@@ -493,6 +476,7 @@ of launchs</string>
     </property>
     <addaction name="actionNew_project"/>
     <addaction name="actionDelete_db_and_create_new"/>
+    <addaction name="actionTranslate"/>
    </widget>
    <addaction name="menu_File"/>
   </widget>
@@ -511,6 +495,11 @@ of launchs</string>
   <action name="actionDelete_db_and_create_new">
    <property name="text">
     <string>Delete db and create new</string>
+   </property>
+  </action>
+  <action name="actionTranslate">
+   <property name="text">
+    <string>Translate to Russian</string>
    </property>
   </action>
  </widget>
