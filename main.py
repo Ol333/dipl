@@ -49,13 +49,16 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.scrollArea.setAlignment(Qt.AlignBottom)
         self.rwd = rab_with_db.DbWork()
 
+        self.pushButton_3.setEnabled(False)
+        self.dateTimeEdit_2.setDateTime(datetime.now())
+
     def showDialog_createProject(self):
         qwe1 = QWidget()
         text1, ok1 = QInputDialog.getText(qwe1, self.tr('new project'),
             self.tr('enter new project name:'))
         if ok1:
             path = QFileDialog.getExistingDirectory(self.form,
-                selt.tr('Choose directory of project (press Enter)'), self.base_addr)
+                self.tr('Choose directory of project (press Enter)'), self.base_addr)
             if path:
                 self.label_6.setText(self.tr(f"project name: {text1}"))
                 # for somethinf in path add modules
@@ -67,7 +70,6 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
 
     def translate(self):
         print(self.actionTranslate.text())
-        # print(self.transl.isEmpty())
         if self.actionTranslate.text() == "Перевести на английский":
             self.transl.load('language_en.qm')
         else:
@@ -82,6 +84,9 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
             i[2].setText(self.tr("Change \nparameters"))
             i[5].setText(self.tr("Delete"))
 
+    # def proj_choosed(self):
+    #     self.pushButton_3.setEnabled(True)
+
     def connect_slots(self):
         self.pushButton.clicked.connect(self.execute)
         self.pushButton_2.clicked.connect(self.buttonClicked_addModule)
@@ -90,6 +95,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.actionDelete_db_and_create_new.triggered.connect(self.delete_and_create_db_tables)
         self.pushButton_4.clicked.connect(self.fill_tree)
         self.actionTranslate.triggered.connect(self.translate)
+        # self.treeView.selectionChanged.triggered.connect(self.proj_choosed)
 
     def set_and_safe_one_modul_params(self,i,file_name,path):
         # изменить док
@@ -376,7 +382,6 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
 
     def fill_tree(self):
         model = QStandardItemModel(0, 6, None)
-        # model.setHorizontalHeaderLabels(['','id', 'name','path/value','date','time'])
         model.setHeaderData(0, Qt.Horizontal, self.tr(""))
         model.setHeaderData(1, Qt.Horizontal, self.tr("id"))
         model.setHeaderData(2, Qt.Horizontal, self.tr("name"))
@@ -388,48 +393,44 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.treeView.setColumnHidden(1,True)
         self.treeView.setColumnWidth(0,200)
 
+        found = lgc.find_(self.lineEdit.text(),self.lineEdit_2.text(),
+                          self.dateTimeEdit.dateTime().toPyDateTime(),
+                          self.dateTimeEdit_2.dateTime().toPyDateTime(),
+                          self.rwd)
 
         root = model.invisibleRootItem()
-
         parent = root
-
-        # proj = self.rwd.get_table("project")
-        # for pr in proj:
-        #     old_parent_pr = parent
-        #     parent.appendRow([QStandardItem("project:"),QStandardItem(str(pr[0])),QStandardItem(str(pr[1])),
-        #                     QStandardItem(str(pr[2])),QStandardItem(), QStandardItem()])
-        #     parent = parent.child(parent.rowCount() - 1)
-        #
-        #     res = self.rwd.get_table_by_id("result","Project_id",pr[0])
-        #     for r in res:
-        #         old_parent_res = parent
-        #         parent.appendRow([QStandardItem("result:"),QStandardItem(str(r[0])),QStandardItem(), QStandardItem(str(r[1])),
-        #                         QStandardItem(str(r[4])),QStandardItem(str(r[5]))])
-        #         # r[0]
-        #         parent = parent.child(parent.rowCount() - 1)
-        #         mod = self.rwd.get_table_by_id("module","Project_id",pr[0])
-        #         for m in mod:
-        #             old_parent_mod = parent
-        #             appRow_wait = [QStandardItem("module:"),QStandardItem(str(m[0])),QStandardItem(str(m[1])),
-        #                             QStandardItem(str(m[2])),QStandardItem(), QStandardItem()]
-        #             # parent.appendRow([QStandardItem("module:"),QStandardItem(str(m[0])),QStandardItem(str(m[1])),
-        #             #                 QStandardItem(str(m[2])),QStandardItem(), QStandardItem()])
-        #             param = self.rwd.get_table_by_id("parameter","Module_id",m[0])
-        #             # parent = parent.child(parent.rowCount() - 1)
-        #             for p in param:
-        #                 val = self.rwd.get_value(p[0],r[0])
-        #                 if val != None:
-        #                     if appRow_wait:
-        #                         parent.appendRow(appRow_wait)
-        #                         appRow_wait = None
-        #                         parent = parent.child(parent.rowCount() - 1)
-        #                     parent.appendRow([QStandardItem("parameter value:"),QStandardItem(str(p[0])),QStandardItem(str(p[2])),
-        #                                     QStandardItem(str(val[2])),QStandardItem(), QStandardItem()])
-        #                     # p[1]
-        #
-        #             parent = old_parent_mod
-        #         parent = old_parent_res
-        #     parent = old_parent_pr
+        for pr in found:
+            old_parent_pr = parent
+            parent.appendRow([QStandardItem(self.tr("project:")),
+                              QStandardItem(str(pr[0][0])),
+                              QStandardItem(str(pr[0][1])),
+                              QStandardItem(str(pr[0][2])),
+                              QStandardItem(),QStandardItem()])
+            parent = parent.child(parent.rowCount() - 1)
+            for r in pr[1]:
+                parent.appendRow([QStandardItem(self.tr("result:")),
+                                  QStandardItem(),QStandardItem(),
+                                  QStandardItem(str(r[1])),
+                                  QStandardItem(str(r[4])),
+                                  QStandardItem(str(r[5]))])
+            for b in pr[2:]:
+                old_parent_mod = parent
+                parent.appendRow([QStandardItem(self.tr("module:")),
+                                  QStandardItem(str(b[1][0])),
+                                  QStandardItem(str(b[1][1])),
+                                  QStandardItem(str(b[1][2])),
+                                  QStandardItem(b[0][1]),
+                                  QStandardItem(b[0][2])])
+                parent = parent.child(parent.rowCount() - 1)
+                for pv in b[2:]:
+                    parent.appendRow([QStandardItem(self.tr("parameter,value:")),
+                                      QStandardItem(str(pv[0][0])),
+                                      QStandardItem(str(pv[0][2])),
+                                      QStandardItem(str(pv[1][2])),
+                                      QStandardItem(), QStandardItem()])
+                parent = old_parent_mod
+            parent = old_parent_pr
 
 class Param(Ui_Form_param, QObject):
     def __init__(self, form, com):

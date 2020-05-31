@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from datetime import datetime
 
 class AllTime():
     timeResult = {}
@@ -201,3 +202,36 @@ def add_(proj,modules_ParamValueRes,rwd):
     # rwd.insert_res(proj[1],proj[2],id_proj)
     rwd.insert_res(proj[1],proj[3],id_proj)
     rwd.connection.commit()
+
+def find_(s_proj,s_mod,dt1,dt2,rwd):
+    result = []
+    proj = rwd.select_proj_with_condition(s_proj)
+    for pr in proj:
+        result.append([pr])
+        res = rwd.get_table_by_id("result","Project_id",pr[0])
+        result[-1].append([])
+        dt_fl = False
+        for r in res:
+            result[-1][-1].append(r)
+            dt_res = datetime.combine(r[4], r[5])
+            if dt1 < dt_res and dt_res < dt2:
+                dt_fl = True
+        if not dt_fl:
+            result.pop()
+            break
+        bind = rwd.select_binding_with_condition(pr[0])
+        mod_fl = False
+        for b in bind:
+            result[-1].append([])
+            mod = rwd.get_line_by_id("module","Id",b[4])
+            if (mod[1].find(s_mod) != -1):
+                mod_fl = True
+            result[-1][-1].append(b)
+            result[-1][-1].append(mod)
+            param = rwd.get_table_by_id("parameter","Module_id",mod[0])
+            for p in param:
+                val = rwd.get_value(p[0],b[0])
+                result[-1][-1].append([p,val])
+        if not mod_fl:
+            result.pop()
+    return result

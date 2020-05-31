@@ -121,8 +121,35 @@ class DbWork():
             mas.append(a)
         return mas
 
-    def get_value(self,param_id,res_id):
-        self.cursor.execute(f'SELECT * FROM "value" WHERE "Parameter_id"={param_id} AND "Result_id"={res_id};')
+    def get_value(self,param_id,bind_id):
+        self.cursor.execute(f'SELECT * FROM "value" WHERE "Parameter_id"={param_id} AND "Binding_id"={bind_id};')
+        for a in self.cursor.fetchall():
+            return a
+
+
+
+    def select_proj_with_condition(self,s):
+        mas = []
+        self.cursor.execute(f"""SELECT *
+                                FROM "project"
+                                WHERE "Name" LIKE '%{s}%'
+                            ;""")
+        for a in self.cursor.fetchall():
+            mas.append(a)
+        return mas
+
+    def select_binding_with_condition(self,id_proj):
+        mas = []
+        self.cursor.execute(f"""SELECT *
+                                FROM "binding"
+                                WHERE "Project_id"={id_proj}
+                            ;""")
+        for a in self.cursor.fetchall():
+            mas.append(a)
+        return mas
+
+    def get_line_by_id(self,table_name,name_id,id):
+        self.cursor.execute(f'SELECT * FROM "{table_name}" WHERE "{name_id}"={id};')
         for a in self.cursor.fetchall():
             return a
 

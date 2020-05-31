@@ -325,12 +325,6 @@ of launchs</string>
         </disabled>
        </palette>
       </property>
-      <property name="font">
-       <font>
-        <family>DejaVu Sans</family>
-        <pointsize>14</pointsize>
-       </font>
-      </property>
       <property name="text">
        <string>Execute</string>
       </property>
@@ -356,10 +350,10 @@ of launchs</string>
      <widget class="QTreeView" name="treeView">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>0</x>
         <y>110</y>
-        <width>611</width>
-        <height>341</height>
+        <width>651</width>
+        <height>371</height>
        </rect>
       </property>
       <property name="editTriggers">
@@ -378,11 +372,48 @@ of launchs</string>
      <widget class="QPushButton" name="pushButton_4">
       <property name="geometry">
        <rect>
-        <x>280</x>
+        <x>270</x>
         <y>70</y>
         <width>83</width>
         <height>25</height>
        </rect>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
       </property>
       <property name="text">
        <string>Find</string>
@@ -391,7 +422,7 @@ of launchs</string>
      <widget class="QLabel" name="label_7">
       <property name="geometry">
        <rect>
-        <x>20</x>
+        <x>10</x>
         <y>10</y>
         <width>131</width>
         <height>17</height>
@@ -404,7 +435,7 @@ of launchs</string>
      <widget class="QLabel" name="label_8">
       <property name="geometry">
        <rect>
-        <x>200</x>
+        <x>160</x>
         <y>10</y>
         <width>101</width>
         <height>17</height>
@@ -417,7 +448,7 @@ of launchs</string>
      <widget class="QLabel" name="label_9">
       <property name="geometry">
        <rect>
-        <x>360</x>
+        <x>310</x>
         <y>10</y>
         <width>64</width>
         <height>17</height>
@@ -430,7 +461,7 @@ of launchs</string>
      <widget class="QLabel" name="label_10">
       <property name="geometry">
        <rect>
-        <x>510</x>
+        <x>490</x>
         <y>10</y>
         <width>64</width>
         <height>17</height>
@@ -440,22 +471,101 @@ of launchs</string>
        <string>To</string>
       </property>
      </widget>
-    </widget>
-    <widget class="QWidget" name="tab_3">
-     <attribute name="title">
-      <string>del</string>
-     </attribute>
-     <widget class="QPushButton" name="pushButton_3">
+     <widget class="QDateTimeEdit" name="dateTimeEdit">
       <property name="geometry">
        <rect>
-        <x>220</x>
-        <y>280</y>
-        <width>83</width>
+        <x>310</x>
+        <y>30</y>
+        <width>161</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="date">
+       <date>
+        <year>2020</year>
+        <month>1</month>
+        <day>1</day>
+       </date>
+      </property>
+     </widget>
+     <widget class="QDateTimeEdit" name="dateTimeEdit_2">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>30</y>
+        <width>161</width>
+        <height>26</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>131</width>
         <height>25</height>
        </rect>
       </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_2">
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>30</y>
+        <width>141</width>
+        <height>25</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_3">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>70</y>
+        <width>131</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>211</red>
+            <green>215</green>
+            <blue>207</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
       <property name="text">
-       <string>Delete</string>
+       <string>Delete project</string>
       </property>
      </widget>
     </widget>

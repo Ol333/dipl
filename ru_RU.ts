@@ -3,59 +3,84 @@
 <context>
     <name>Example</name>
     <message>
-        <location filename="main.py" line="53"/>
+        <location filename="main.py" line="57"/>
         <source>new project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="53"/>
+        <location filename="main.py" line="57"/>
         <source>enter new project name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="178"/>
+        <location filename="main.py" line="197"/>
         <source>project name: ...---...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="254"/>
+        <location filename="main.py" line="273"/>
         <source>del </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="353"/>
+        <location filename="main.py" line="372"/>
         <source>Change 
 parameters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="353"/>
+        <location filename="main.py" line="372"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="377"/>
+        <location filename="main.py" line="395"/>
         <source>id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="378"/>
+        <location filename="main.py" line="396"/>
         <source>name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="379"/>
+        <location filename="main.py" line="397"/>
         <source>path/value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="380"/>
+        <location filename="main.py" line="398"/>
         <source>date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="381"/>
+        <location filename="main.py" line="399"/>
         <source>time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.py" line="60"/>
+        <source>Choose directory of project (press Enter)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.py" line="414"/>
+        <source>project:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.py" line="421"/>
+        <source>result:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.py" line="428"/>
+        <source>module:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.py" line="436"/>
+        <source>parameter,value:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -70,34 +95,34 @@ parameters</source>
 <context>
     <name>Form_param</name>
     <message>
-        <location filename="param.py" line="52"/>
+        <location filename="param.py" line="63"/>
         <source>Parameters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="param.py" line="53"/>
+        <location filename="param.py" line="64"/>
         <source>Parameter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="param.py" line="54"/>
+        <location filename="param.py" line="65"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="param.py" line="55"/>
+        <location filename="param.py" line="66"/>
         <source>if the parameter you need is not displayed please contact the author
 check &apos;group&apos; field for parameter&apos;s value combination
 check &apos;one by one&apos; field for searching parameter&apos;s value one by one</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="param.py" line="58"/>
+        <location filename="param.py" line="69"/>
         <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="param.py" line="59"/>
+        <location filename="param.py" line="70"/>
         <source>One 
 by
  one</source>
@@ -107,123 +132,110 @@ by
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="ui.py" line="180"/>
+        <location filename="ui.py" line="208"/>
         <source>SPaCCE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="181"/>
+        <location filename="ui.py" line="209"/>
         <source>Add module</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="182"/>
+        <location filename="ui.py" line="210"/>
         <source>Prog&apos;s or 
 folder&apos;s name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="184"/>
+        <location filename="ui.py" line="212"/>
         <source>Number 
 of launchs</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="ui.py" line="186"/>
+        <location filename="ui.py" line="214"/>
         <source>№</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="187"/>
+        <location filename="ui.py" line="215"/>
         <source>Parameters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="190"/>
+        <location filename="ui.py" line="218"/>
         <source>Execute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="189"/>
+        <location filename="ui.py" line="217"/>
         <source>Project name: ...---...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="191"/>
+        <location filename="ui.py" line="219"/>
         <source>Find</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="192"/>
+        <location filename="ui.py" line="220"/>
         <source>Project&apos;s name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="193"/>
+        <location filename="ui.py" line="221"/>
         <source>Modules</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="194"/>
+        <location filename="ui.py" line="222"/>
         <source>From</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="195"/>
+        <location filename="ui.py" line="223"/>
         <source>To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="196"/>
+        <location filename="ui.py" line="225"/>
         <source>db</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="197"/>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui.py" line="198"/>
-        <source>del</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui.py" line="199"/>
+        <location filename="ui.py" line="226"/>
         <source>&amp;File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="200"/>
+        <location filename="ui.py" line="227"/>
         <source>New project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="201"/>
+        <location filename="ui.py" line="228"/>
         <source>Create new project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="202"/>
+        <location filename="ui.py" line="229"/>
         <source>Ctrl+P</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="203"/>
+        <location filename="ui.py" line="230"/>
         <source>Delete db and create new</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui.py" line="204"/>
+        <location filename="ui.py" line="231"/>
         <source>Translate to Russian</source>
         <translation type="unfinished"></translation>
     </message>
-</context>
-<context>
-    <name>selt</name>
     <message>
-        <location filename="main.py" line="56"/>
-        <source>Choose directory of project (press Enter)</source>
+        <location filename="ui.py" line="224"/>
+        <source>Delete project</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
