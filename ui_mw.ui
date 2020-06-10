@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>SPaCCE</string>
   </property>
+  <property name="locale">
+   <locale language="English" country="UnitedKingdom"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
@@ -61,11 +64,42 @@
      </palette>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <property name="documentMode">
      <bool>true</bool>
     </property>
+    <widget class="QWidget" name="tab_3">
+     <attribute name="title">
+      <string>Progress</string>
+     </attribute>
+     <widget class="QProgressBar" name="progressBar">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>450</y>
+        <width>651</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="textEdit">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>10</y>
+        <width>651</width>
+        <height>421</height>
+       </rect>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </widget>
     <widget class="QWidget" name="tab">
      <attribute name="title">
       <string>Execute</string>
@@ -74,7 +108,7 @@
       <property name="geometry">
        <rect>
         <x>260</x>
-        <y>370</y>
+        <y>380</y>
         <width>141</width>
         <height>41</height>
        </rect>
@@ -124,7 +158,7 @@
       <property name="geometry">
        <rect>
         <x>40</x>
-        <y>30</y>
+        <y>40</y>
         <width>121</width>
         <height>51</height>
        </rect>
@@ -138,7 +172,7 @@ folder's name</string>
       <property name="geometry">
        <rect>
         <x>460</x>
-        <y>30</y>
+        <y>40</y>
         <width>71</width>
         <height>51</height>
        </rect>
@@ -152,7 +186,7 @@ of launchs</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>50</y>
+        <y>60</y>
         <width>21</width>
         <height>21</height>
        </rect>
@@ -165,7 +199,7 @@ of launchs</string>
       <property name="geometry">
        <rect>
         <x>280</x>
-        <y>40</y>
+        <y>50</y>
         <width>91</width>
         <height>41</height>
        </rect>
@@ -178,8 +212,8 @@ of launchs</string>
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>80</y>
-        <width>641</width>
+        <y>90</y>
+        <width>651</width>
         <height>281</height>
        </rect>
       </property>
@@ -267,7 +301,7 @@ of launchs</string>
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>639</width>
+         <width>649</width>
          <height>279</height>
         </rect>
        </property>
@@ -284,7 +318,7 @@ of launchs</string>
        <rect>
         <x>480</x>
         <y>440</y>
-        <width>161</width>
+        <width>171</width>
         <height>41</height>
        </rect>
       </property>
@@ -332,20 +366,70 @@ of launchs</string>
      <widget class="QLabel" name="label_6">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>270</x>
         <y>10</y>
-        <width>471</width>
-        <height>17</height>
+        <width>381</width>
+        <height>20</height>
        </rect>
       </property>
       <property name="text">
        <string>Project name: ...---...</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="pushButton_5">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>4</y>
+        <width>261</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="text">
+       <string>Creare new or change project</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
-      <string>db</string>
+      <string>DB</string>
      </attribute>
      <widget class="QTreeView" name="treeView">
       <property name="geometry">
@@ -353,7 +437,7 @@ of launchs</string>
         <x>0</x>
         <y>110</y>
         <width>651</width>
-        <height>371</height>
+        <height>331</height>
        </rect>
       </property>
       <property name="editTriggers">
@@ -521,9 +605,9 @@ of launchs</string>
      <widget class="QPushButton" name="pushButton_3">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>70</y>
-        <width>131</width>
+        <x>0</x>
+        <y>450</y>
+        <width>151</width>
         <height>25</height>
        </rect>
       </property>
@@ -568,6 +652,106 @@ of launchs</string>
        <string>Delete project</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="pushButton_6">
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>450</y>
+        <width>161</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="text">
+       <string>Open project</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_7">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>450</y>
+        <width>321</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>252</red>
+            <green>175</green>
+            <blue>62</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="text">
+       <string>Open module result</string>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>
@@ -584,11 +768,37 @@ of launchs</string>
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="actionNew_project"/>
     <addaction name="actionDelete_db_and_create_new"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <widget class="QMenu" name="menuMinimization_criterion_2">
+     <property name="title">
+      <string>Minimization criterion</string>
+     </property>
+     <addaction name="actionTime_2"/>
+    </widget>
     <addaction name="actionTranslate"/>
+    <addaction name="menuMinimization_criterion_2"/>
+   </widget>
+   <widget class="QMenu" name="menuExecute">
+    <property name="title">
+     <string>Execute</string>
+    </property>
+    <addaction name="actionNew_project"/>
    </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuExecute"/>
+   <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionNew_project">
@@ -610,6 +820,21 @@ of launchs</string>
   <action name="actionTranslate">
    <property name="text">
     <string>Translate to Russian</string>
+   </property>
+  </action>
+  <action name="actionTime">
+   <property name="text">
+    <string>Time</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionTime_2">
+   <property name="text">
+    <string>Time</string>
    </property>
   </action>
  </widget>

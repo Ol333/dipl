@@ -9,10 +9,11 @@ import matplotlib.pyplot as plt
 
 from PyQt5.QtWidgets import (QWidget, QPushButton, QLineEdit, QCheckBox,
 QGridLayout, QInputDialog, QApplication, QMessageBox, QTextEdit, QRadioButton,
-QGroupBox, QScrollArea, QLabel, QHBoxLayout, QMainWindow,
+QGroupBox, QScrollArea, QLabel, QHBoxLayout, QMainWindow, QProgressBar,
 QAction, QFileDialog)
-from PyQt5.QtCore import (QRect, QCoreApplication,pyqtSignal, QObject, Qt, QTranslator, QLocale)
-from PyQt5.QtGui import QStandardItemModel,QStandardItem
+from PyQt5.QtCore import (QRect, QCoreApplication, pyqtSignal, QObject, Qt,
+QTranslator, QLocale)
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
 from ui import Ui_MainWindow
 from param import Ui_Form_param
@@ -23,6 +24,7 @@ import logic as lgc
 class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
     numb = 0
     lay = QGridLayout()
+    mas_progress = []
     gridElementOfInput = []
     moduleInfo = lgc.ModuleTime()
     timeResult = lgc.AllTime()
@@ -42,6 +44,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.app = app
         self.setupUi(form1)
         self.window_main = form1
+        self.treeView.setModel(QStandardItemModel())
         self.connect_slots()
 
         self.buttonClicked_addModule()
@@ -49,19 +52,24 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         self.scrollArea.setAlignment(Qt.AlignBottom)
         self.rwd = rab_with_db.DbWork()
 
-        self.pushButton_3.setEnabled(False)
         self.dateTimeEdit_2.setDateTime(datetime.now())
 
     def showDialog_createProject(self):
         qwe1 = QWidget()
-        text1, ok1 = QInputDialog.getText(qwe1, self.tr('new project'),
-            self.tr('enter new project name:'))
+        text1, ok1 = QInputDialog.getText(qwe1, self.tr('New project'),
+            self.tr('Enter new project name:'))
         if ok1:
-            path = QFileDialog.getExistingDirectory(self.form,
-                self.tr('Choose directory of project (press Enter)'), self.base_addr)
-            if path:
-                self.label_6.setText(self.tr(f"project name: {text1}"))
-                # for somethinf in path add modules
+            if (self.rwd.select_proj_by_name(text1) != None):
+                mb = QMessageBox()
+                mb.setText(self.tr("Already exists."))
+                mb.exec()
+                self.showDialog_createProject()
+            else:
+                path = QFileDialog.getExistingDirectory(self.form,
+                    self.tr('Choose directory of project (press Enter)'), self.base_addr)
+                if path:
+                    self.label_6.setText(self.tr(f"Project name: {text1}"))
+                    # for somethinf in path add modules
 
     def delete_and_create_db_tables(self): # only for development
         self.rwd.delete_db_tables()
@@ -84,18 +92,44 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
             i[2].setText(self.tr("Change \nparameters"))
             i[5].setText(self.tr("Delete"))
 
-    # def proj_choosed(self):
-    #     self.pushButton_3.setEnabled(True)
+    def del_proj(self):
+        print("delete project...")
+        # удалить привязки
+        # удалить результаты проекта
+        # удалить проект
+        # удалить значения модуля
+        # если значений больше нет, то удалить параметры и модуль
+
+    def open_proj(self):
+        temp = self.treeView.selectionModel().model()
+        proj_name = str(temp.data(self.treeView.selectedIndexes()[1]))
+        print(self.rwd.select_proj_by_name(proj_name))
+        # удалить все со средней складки
+        # добавить модули согласно бд и заполнить параметры
+        # :)
+
+    def open_mod_res(self):
+        print("open module result...")
+        # сначила сохранить эти результаты ^-^
+
+    def about_program(self):
+        mb = QMessageBox()
+        mb.setText(self.tr("It's program.\nAuthor is O.P.Bobrovskaya."))
+        mb.exec()
 
     def connect_slots(self):
         self.pushButton.clicked.connect(self.execute)
         self.pushButton_2.clicked.connect(self.buttonClicked_addModule)
         self.comm.fillParam.connect(self.fillParamLineEdit)
         self.actionNew_project.triggered.connect(self.showDialog_createProject)
+        self.pushButton_5.clicked.connect(self.showDialog_createProject)
         self.actionDelete_db_and_create_new.triggered.connect(self.delete_and_create_db_tables)
         self.pushButton_4.clicked.connect(self.fill_tree)
         self.actionTranslate.triggered.connect(self.translate)
-        # self.treeView.selectionChanged.triggered.connect(self.proj_choosed)
+        self.actionAbout.triggered.connect(self.about_program)
+        self.pushButton_3.clicked.connect(self.del_proj)
+        self.pushButton_6.clicked.connect(self.open_proj)
+        self.pushButton_7.clicked.connect(self.open_mod_res)
 
     def set_and_safe_one_modul_params(self,i,file_name,path):
         # изменить док
@@ -135,19 +169,27 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         re = ''
         re += "\n №" + str(i)
         for j in range(int(self.gridElementOfInput[i][4].text())):
-            loc_re = ""
-            some_str = subprocess.check_output(['make','-f','temporary_new_file'],
-                                                stderr=subprocess.STDOUT)
-            some_str = some_str.decode()
-            loc_re += some_str
-            start_time = datetime.now()
-            some_str = subprocess.check_output("./" + module_name,
-                                                stderr=subprocess.STDOUT)
-            t = datetime.now()-start_time
-            self.moduleInfo.test_time_values(i,j,t)
-            some_str = some_str.decode()
-            loc_re += some_str
-            re += "\n №№" + str(j)+' '+loc_re
+            try:
+                loc_re = ""
+                some_str = subprocess.check_output(['make','-f','temporary_new_file'],
+                                                    stderr=subprocess.STDOUT)
+                some_str = some_str.decode()
+                loc_re += some_str
+                start_time = datetime.now()
+                some_str = subprocess.check_output("./" + module_name,
+                                                    stderr=subprocess.STDOUT)
+                t = datetime.now()-start_time
+                self.moduleInfo.test_time_values(i,j,t)
+                some_str = some_str.decode()
+                loc_re += some_str
+                re += "\n №№" + str(j)+' '+loc_re
+                temp_s = ('№'+str(j)+self.tr(' launch completed successfully. ')
+                          + str(t)
+                          # + t.total_seconds()
+                          )
+                self.textEdit.append(temp_s)
+            except Exception as e:
+                self.textEdit.append('№'+str(j+1)+self.tr(' launch. Error ')+str(e))
         os.remove('temporary_new_file')
         return (res_list,re)
 
@@ -157,17 +199,25 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         re = ''
         re += "\n №" + str(i)
         for j in range(int(self.gridElementOfInput[i][4].text())):
-            loc_re = ""
-            ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
-            start_time = datetime.now()
-            loc_re += str(subprocess.run(ar))
-            t = datetime.now()-start_time
-            self.moduleInfo.test_time_values(i,j,t)
-            # some_str = subprocess.check_output(ar,stderr=subprocess.STDOUT)
-            # some_str = some_str.decode()
-            # print(some_str,"@@@@@")
-            # loc_re += some_str+"\n"
-            re += "\n №№" + str(j)+' '+loc_re
+            try:
+                loc_re = ""
+                ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
+                start_time = datetime.now()
+                loc_re += str(subprocess.run(ar))
+                t = datetime.now()-start_time
+                self.moduleInfo.test_time_values(i,j,t)
+                # some_str = subprocess.check_output(ar,stderr=subprocess.STDOUT)
+                # some_str = some_str.decode()
+                # print(some_str,"@@@@@")
+                # loc_re += some_str+"\n"
+                re += "\n №№" + str(j)+' '+loc_re
+                temp_s = ('№'+str(j) + self.tr(' launch completed successfully. ')
+                          + str(t)
+                          # + t.total_seconds()
+                          )
+                self.textEdit.append(temp_s)
+            except Exception as e:
+                self.textEdit.append('№'+str(j+1)+self.tr(' launch. Error ')+str(e))
         os.remove('temporary_new_file')
         return (res_list,re)
 
@@ -176,24 +226,43 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
         re = ''
         re += "\n №" + str(i)
         for j in range(int(self.gridElementOfInput[i][4].text())):
-            loc_re = ""
-            ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
-            start_time = datetime.now()
-            loc_re += str(subprocess.run(ar))
-            t = datetime.now()-start_time
-            self.moduleInfo.test_time_values(i,j,t)
-            ar.extend(self.gridElementOfInput[i][3].toPlainText().split(' '))
-            re += "\n №№" + str(j)+' '+loc_re
+            try:
+                loc_re = ""
+                ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
+                start_time = datetime.now()
+                loc_re += str(subprocess.run(ar))
+                t = datetime.now()-start_time
+                self.moduleInfo.test_time_values(i,j,t)
+                ar.extend(self.gridElementOfInput[i][3].toPlainText().split(' '))
+                re += "\n №№" + str(j)+' '+loc_re
+                temp_s = ('№'+str(j)+self.tr(' launch completed successfully. ')
+                          + str(t)
+                          # + t.total_seconds()
+                          )
+                self.textEdit.append(temp_s)
+            except Exception as e:
+                self.textEdit.append('№'+str(j+1)+self.tr(' launch. Error ')+str(e))
         return (res_list,re)
 
     def execute(self):
-        if self.label_6.text() == self.tr("project name: ...---..."):
+        while self.label_6.text() == self.tr("project name: ...---..."):
             self.showDialog_createProject()
+        self.tabWidget.setCurrentIndex(0) #выполняет спустя итерацию
         modules_paramValueRes = []
         re = ""
+        count_of_modules = 0
+        count_of_execs = 0
+        for i in range(len(self.gridElementOfInput)):
+            if self.gridElementOfInput[i][2].isEnabled():
+                count_of_modules += 1
+                count_of_execs += int(self.gridElementOfInput[i][4].text())
+        self.textEdit.append('<div align="center"><b>' + "Project "
+                            + self.label_6.text().split(":")[1].strip()
+                            + " is begin." + '</b></div>')
         for i in range(len(self.gridElementOfInput)):
             if self.gridElementOfInput[i][2].isEnabled():
                 module_name = self.gridElementOfInput[i][1].text()
+                self.textEdit.append('<b><i>Module '+str(i)+'.'+module_name+' is begin.'+'</i></b>')
                 self.timeResult.module_name_exist(module_name)
 
                 path = self.base_addr
@@ -217,43 +286,52 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, Ui_Form_out, object):
                                             aver_time,
                                             self.moduleInfo.get_best_time(i),
                                             i)
-        # re += self.timeResult.modules_res()
-        # list_of_flags = self.timeResult.list_flags_name(module_name,32)
+                self.textEdit.append('<b><i>Module '+str(i)+'.'+module_name+' is finished.'+'</i></b>')
+                self.progressBar.setValue(((self.progressBar.value()
+                                            /100*count_of_execs
+                            + int(self.gridElementOfInput[i][4].text()))
+                                                           /count_of_execs)*100)
+        re += self.timeResult.modules_res()
+        list_of_flags = self.timeResult.list_flags_name(module_name,-1)
+        print(list_of_flags)
         # temp_list = list(map(lambda x:str(list_of_flags.index(x)+1)+' '+
         #                                   str(x.split('\n')[1]),
         #                      list_of_flags))
         # re += '\n'.join(temp_list)
+        self.textEdit.append('<div align="center"><b>'+"Project "+self.label_6.text().split(":")[1].strip()+" is finished."+'</b></div>')
         self.ui_output.setText(str(re))
         self.window_output.show()
-        #
-        #
-        # fig = plt.figure()
-        # mpl.rcParams.update({'font.size': 10})
-        # plt.title('Среднее время выполнения программы')
-        #
-        # ax = plt.axes()
-        # ax.xaxis.grid(True, zorder = 1)
-        #
-        # tempN = 32
-        # col_vo_const_fl = self.timeResult.col_vo_const_fl(module_name,tempN)
-        #
-        # xs = range(tempN)
-        # for i in range(col_vo_const_fl):
-        #     plt.barh([x + 0.05 + (0.9 / col_vo_const_fl)*i for x in xs],
-        #             self.timeResult.take_list_cut(module_name,tempN,i),
-        #             height=(0.9 / col_vo_const_fl),
-        #             color=[(0.12*(i%3))/1,(0.12*(i%3+1))/1,(0.12*(i%3+2))/1],
-        #             label=self.timeResult.list_for_label(module_name,tempN,i),
-        #             zorder=2)
-        # plt.yticks(xs,range(1,tempN+1))
-        # plt.legend(loc='upper right')
-        # plt.show()
-        #
-        #
-        # # save pyplot
-        # fig.savefig("res_"+self.label_6.text().split(":")[1].strip()+'.png')
+
+
+        fig = plt.figure()
+        mpl.rcParams.update({'font.size': 10})
+        plt.title('Среднее время выполнения программы')
+
+        ax = plt.axes()
+        ax.xaxis.grid(True, zorder = 1)
+
+        tempN = count_of_modules
+        col_vo_const_fl = self.timeResult.col_vo_const_fl(module_name,tempN)
+
+        xs = range(tempN)
+        for i in range(col_vo_const_fl): #может вынести это куда-то отдельно... чтобы отдельно подкручивать потом...
+            plt.barh([x + 0.05 + (0.9 / col_vo_const_fl)*i for x in xs],
+                    self.timeResult.take_list_cut(module_name,tempN,i),
+                    height=(0.9 / col_vo_const_fl),
+                    color=[(0.12*(i%3))/1,(0.12*(i%3+1))/1,(0.12*(i%3+2))/1],
+                    label=self.timeResult.list_for_label(module_name,tempN,i),
+                    zorder=2)
+        plt.yticks(xs,range(1,tempN+1))
+        plt.legend(loc='upper right')
+        plt.show()
+
+
+        if not (os.path.isdir(os.path.join(self.base_addr,"result"))):
+            os.makedirs(os.path.join(self.base_addr,"result"))
+        # save pyplot
+        fig.savefig(os.path.join(self.base_addr,"result","res_"+self.label_6.text().split(":")[1].strip()+'.png'))
         # save txt
-        f_new = open(os.path.join(self.base_addr,"res_"+self.label_6.text().split(":")[1].strip()+'.txt'),"w")
+        f_new = open(os.path.join(self.base_addr,"result","res_"+self.label_6.text().split(":")[1].strip()+'.txt'),"w")
         f_new.write(re)
         f_new.close()
         # db project modules parametres values results(-)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 from datetime import datetime
 
 class AllTime():
@@ -194,13 +195,13 @@ def add_(proj,modules_ParamValueRes,rwd):
         id_proj = rwd.insert_proj(proj[0],proj[1])
     # создать результат и привязки
     for m in mas_of_mod_and_its_val:
-        id_binding = rwd.insert_binding(m[2],m[3],id_proj,m[0])
+        id_binding = rwd.insert_binding(m[2],m[3],"",id_proj,m[0])
         mas_of_values = []
         for pv in m[1]:
             mas_of_values.append([pv[0],pv[1],id_binding])
         rwd.insert_few_value(mas_of_values)
-    # rwd.insert_res(proj[1],proj[2],id_proj)
-    rwd.insert_res(proj[1],proj[3],id_proj)
+    rwd.insert_res(os.path.join(proj[1],"result"),proj[2],id_proj)
+    rwd.insert_res(os.path.join(proj[1],"result"),proj[3],id_proj)
     rwd.connection.commit()
 
 def find_(s_proj,s_mod,dt1,dt2,rwd):
@@ -223,7 +224,7 @@ def find_(s_proj,s_mod,dt1,dt2,rwd):
         mod_fl = False
         for b in bind:
             result[-1].append([])
-            mod = rwd.get_line_by_id("module","Id",b[4])
+            mod = rwd.get_line_by_id("module","Id",b[5])
             if (mod[1].find(s_mod) != -1):
                 mod_fl = True
             result[-1][-1].append(b)

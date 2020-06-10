@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import psycopg2
 from datetime import datetime
 
@@ -69,6 +69,7 @@ class DbWork():
         self.cursor.execute("""CREATE TABLE "binding" ("Id" serial NOT NULL,
                                                     "Order_number" integer NOT NULL,
                                                 	"Count" integer NOT NULL,
+                                                    "Path" VARCHAR(255) NOT NULL,
                                                 	"Project_id" integer NOT NULL,
                                                 	"Module_id" integer NOT NULL,
                                                     CONSTRAINT "binding_pk" PRIMARY KEY ("Id")
@@ -233,11 +234,11 @@ class DbWork():
             mas.append(a)
         return mas
 
-    def insert_binding(self,numb,count,id_proj,id_mod):
-        self.cursor.execute("""INSERT INTO "binding" ("Id","Order_number","Count","Project_id","Module_id" )
-                        VALUES (default,{},{},{},{})
+    def insert_binding(self,numb,count,path,id_proj,id_mod):
+        self.cursor.execute("""INSERT INTO "binding" ("Id","Order_number","Count","Path","Project_id","Module_id" )
+                        VALUES (default,{},{},'{}',{},{})
                         RETURNING "Id";
-                        """.format(numb,count,id_proj,id_mod))
+                        """.format(numb,count,path,id_proj,id_mod))
         return self.cursor.fetchall()[0][0]
 
     def delete_db_tables(self):
@@ -250,5 +251,10 @@ class DbWork():
                         drop table binding cascade;
                         """)
         self.connection.commit()
+
+    def select_proj_by_name(self,name):
+        self.cursor.execute(f"""SELECT * FROM "project" WHERE "Name"='{name}';""")
+        for a in self.cursor.fetchall():
+            return a
 
     # self.connection.close()
