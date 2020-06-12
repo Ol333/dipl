@@ -187,7 +187,7 @@ class DbWork():
         return self.cursor.fetchall()[0][0]
 
     def insert_res(self,path,file_ext,id_proj):
-        self.cursor.execute("""INSERT INTO "result" ("Id","Path","File_extension" ,"Project_id","Date","Time")
+        self.cursor.execute("""INSERT INTO "result" ("Id","Path","File_extension","Project_id","Date","Time")
                         VALUES (default,'{}','{}',{},'{}','{}')
                         RETURNING "Id";
                         """.format(path,file_ext,id_proj,datetime.now().isoformat(sep=' '),datetime.now().replace(microsecond=0).isoformat(sep=' ')))
@@ -256,5 +256,22 @@ class DbWork():
         self.cursor.execute(f"""SELECT * FROM "project" WHERE "Name"='{name}';""")
         for a in self.cursor.fetchall():
             return a
+
+    def del_by_id(self,table,id):
+        self.cursor.execute("""DELETE FROM "{}"
+                            WHERE "Id"={};""".format(table,id))
+
+    def del_and_return_mas(self,table,field,value,return_val):
+        mas = []
+        if return_val == '':
+            self.cursor.execute("""DELETE FROM "{}"
+                                WHERE "{}"={};""".format(table,field,value))
+        else:
+            self.cursor.execute("""DELETE FROM "{}"
+                                WHERE "{}"={}
+                                RETURNING "{}";""".format(table,field,value,return_val))
+            for a in self.cursor.fetchall():
+                mas.append(a)
+            return mas
 
     # self.connection.close()

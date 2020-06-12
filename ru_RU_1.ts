@@ -14,89 +14,89 @@
         <translation type="obsolete">Введите название нового проекта:</translation>
     </message>
     <message>
-        <location filename="main.py" line="255"/>
+        <location filename="main.py" line="282"/>
         <source>project name: ...---...</source>
-        <translation>Название проекта: ...---...</translation>
+        <translation type="obsolete">Название проекта: ...---...</translation>
     </message>
     <message>
-        <location filename="main.py" line="351"/>
+        <location filename="main.py" line="407"/>
         <source>del </source>
-        <translation>Удалить</translation>
+        <translation>Удалить </translation>
     </message>
     <message>
-        <location filename="main.py" line="450"/>
+        <location filename="main.py" line="506"/>
         <source>Change 
 parameters</source>
         <translation>Изменить
 параметры</translation>
     </message>
     <message>
-        <location filename="main.py" line="450"/>
+        <location filename="main.py" line="506"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="main.py" line="473"/>
+        <location filename="main.py" line="529"/>
         <source>id</source>
         <translation>Номер</translation>
     </message>
     <message>
-        <location filename="main.py" line="474"/>
+        <location filename="main.py" line="530"/>
         <source>name</source>
         <translation>Название</translation>
     </message>
     <message>
-        <location filename="main.py" line="475"/>
+        <location filename="main.py" line="531"/>
         <source>path/value</source>
         <translation>Путь/значение</translation>
     </message>
     <message>
-        <location filename="main.py" line="476"/>
+        <location filename="main.py" line="532"/>
         <source>date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="main.py" line="477"/>
+        <location filename="main.py" line="533"/>
         <source>time</source>
         <translation>Время</translation>
     </message>
     <message>
-        <location filename="main.py" line="68"/>
+        <location filename="main.py" line="77"/>
         <source>Choose directory of project (press Enter)</source>
         <translation>Выберите директорию проекта (нажать Enter)</translation>
     </message>
     <message>
-        <location filename="main.py" line="492"/>
+        <location filename="main.py" line="548"/>
         <source>project:</source>
         <translation>Проект:</translation>
     </message>
     <message>
-        <location filename="main.py" line="499"/>
+        <location filename="main.py" line="555"/>
         <source>result:</source>
         <translation>Результат:</translation>
     </message>
     <message>
-        <location filename="main.py" line="506"/>
+        <location filename="main.py" line="562"/>
         <source>module:</source>
         <translation>Модуль:</translation>
     </message>
     <message>
-        <location filename="main.py" line="514"/>
+        <location filename="main.py" line="570"/>
         <source>parameter,value:</source>
         <translation>Параметр,значение:</translation>
     </message>
     <message>
-        <location filename="main.py" line="59"/>
+        <location filename="main.py" line="68"/>
         <source>New project</source>
         <translation>Новый проект</translation>
     </message>
     <message>
-        <location filename="main.py" line="59"/>
+        <location filename="main.py" line="68"/>
         <source>Enter new project name:</source>
         <translation>Введите название нового проекта:</translation>
     </message>
     <message>
-        <location filename="main.py" line="64"/>
+        <location filename="main.py" line="73"/>
         <source>Already exists.</source>
         <translation>Уже существует.</translation>
     </message>
@@ -106,21 +106,116 @@ parameters</source>
         <translation type="obsolete"> запуск проведен.</translation>
     </message>
     <message>
-        <location filename="main.py" line="251"/>
+        <location filename="main.py" line="283"/>
         <source> launch. Error </source>
         <translation> запуск. Ошибка </translation>
     </message>
     <message>
-        <location filename="main.py" line="117"/>
+        <location filename="main.py" line="145"/>
         <source>It&apos;s program.
 Author is O.P.Bobrovskaya.</source>
         <translation>Это программа.
 Автор - Бобровская О.П.</translation>
     </message>
     <message>
-        <location filename="main.py" line="245"/>
+        <location filename="main.py" line="278"/>
         <source> launch completed successfully. </source>
         <translation> запуск успешно завершился. </translation>
+    </message>
+    <message>
+        <location filename="main.py" line="122"/>
+        <source>Delete project</source>
+        <translation>Удилить проект</translation>
+    </message>
+    <message>
+        <location filename="main.py" line="122"/>
+        <source>Are you sure?</source>
+        <translation>Вы уверены?</translation>
+    </message>
+    <message>
+        <location filename="main.py" line="365"/>
+        <source>Project </source>
+        <translation>Проект </translation>
+    </message>
+    <message>
+        <location filename="main.py" line="276"/>
+        <source> is begin.</source>
+        <translation type="obsolete"> запущен.</translation>
+    </message>
+    <message>
+        <location filename="main.py" line="336"/>
+        <source>Module </source>
+        <translation>Модуль </translation>
+    </message>
+    <message>
+        <location filename="main.py" line="313"/>
+        <source> is finished.</source>
+        <translation type="obsolete"> выполнен.</translation>
+    </message>
+    <message>
+        <location filename="main.py" line="376"/>
+        <source>Average program execution time</source>
+        <translation type="obsolete">Среднее время выполнения программы</translation>
+    </message>
+    <message>
+        <location filename="main.py" line="119"/>
+        <source>None selected.</source>
+        <translation>Ни один не выбран.</translation>
+    </message>
+    <message>
+        <location filename="main.py" line="278"/>
+        <source>Program execution time: </source>
+        <translation>Время выполнения программы: </translation>
+    </message>
+    <message>
+        <location filename="main.py" line="310"/>
+        <source> is begin </source>
+        <translation> запущен </translation>
+    </message>
+    <message>
+        <location filename="main.py" line="365"/>
+        <source> is finished </source>
+        <translation> выполнен </translation>
+    </message>
+    <message>
+        <location filename="main.py" line="347"/>
+        <source>Total module lead time : </source>
+        <translation>Общее время выполнения модуля : </translation>
+    </message>
+    <message>
+        <location filename="main.py" line="363"/>
+        <source>. Successfully completed: </source>
+        <translation type="obsolete">. Успешно завершено: </translation>
+    </message>
+    <message>
+        <location filename="main.py" line="369"/>
+        <source>Total project lead time : </source>
+        <translation>Общее время выполнения проекта : </translation>
+    </message>
+    <message>
+        <location filename="main.py" line="347"/>
+        <source>. Successfully completed launchs: </source>
+        <translation>. Успешно завершено запусков: </translation>
+    </message>
+    <message>
+        <location filename="main.py" line="369"/>
+        <source>. Successfully completed modules: </source>
+        <translation>. Успешно завершено модулей: </translation>
+    </message>
+    <message>
+        <location filename="main.py" line="265"/>
+        <source>Module â</source>
+        <translation>Модуль №</translation>
+    </message>
+    <message>
+        <location filename="main.py" line="277"/>
+        <source>Launch â</source>
+        <translation>Запуск №</translation>
+    </message>
+    <message>
+        <location filename="main.py" line="287"/>
+        <source>Project name: ...---...</source>
+        <translation>Название проекта: ...---...</translation>
     </message>
 </context>
 <context>
@@ -179,17 +274,17 @@ by
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="ui.py" line="282"/>
+        <location filename="ui.py" line="296"/>
         <source>SPaCCE</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="ui.py" line="284"/>
+        <location filename="ui.py" line="299"/>
         <source>Add module</source>
         <translation>Добавить модуль</translation>
     </message>
     <message>
-        <location filename="ui.py" line="285"/>
+        <location filename="ui.py" line="300"/>
         <source>Prog&apos;s or 
 folder&apos;s name</source>
         <translation>Название 
@@ -197,49 +292,49 @@ folder&apos;s name</source>
 или каталога</translation>
     </message>
     <message>
-        <location filename="ui.py" line="287"/>
+        <location filename="ui.py" line="302"/>
         <source>Number 
 of launchs</source>
         <translation>Количество 
 запусков</translation>
     </message>
     <message>
-        <location filename="ui.py" line="290"/>
+        <location filename="ui.py" line="305"/>
         <source>Parameters</source>
         <translation>Параметры</translation>
     </message>
     <message>
-        <location filename="ui.py" line="308"/>
+        <location filename="ui.py" line="323"/>
         <source>Execute</source>
         <translation>Выполнить</translation>
     </message>
     <message>
-        <location filename="ui.py" line="292"/>
+        <location filename="ui.py" line="307"/>
         <source>Project name: ...---...</source>
         <translation>Название проекта: ...---...</translation>
     </message>
     <message>
-        <location filename="ui.py" line="295"/>
+        <location filename="ui.py" line="310"/>
         <source>Find</source>
         <translation>Вывести</translation>
     </message>
     <message>
-        <location filename="ui.py" line="296"/>
+        <location filename="ui.py" line="311"/>
         <source>Project&apos;s name</source>
         <translation>Название проекта</translation>
     </message>
     <message>
-        <location filename="ui.py" line="297"/>
+        <location filename="ui.py" line="312"/>
         <source>Modules</source>
         <translation>Модули</translation>
     </message>
     <message>
-        <location filename="ui.py" line="298"/>
+        <location filename="ui.py" line="313"/>
         <source>From</source>
         <translation>От</translation>
     </message>
     <message>
-        <location filename="ui.py" line="299"/>
+        <location filename="ui.py" line="314"/>
         <source>To</source>
         <translation>До</translation>
     </message>
@@ -259,77 +354,72 @@ of launchs</source>
         <translation type="obsolete">Удалить</translation>
     </message>
     <message>
-        <location filename="ui.py" line="304"/>
+        <location filename="ui.py" line="319"/>
         <source>&amp;File</source>
         <translation>&amp;Файл</translation>
     </message>
     <message>
-        <location filename="ui.py" line="309"/>
+        <location filename="ui.py" line="324"/>
         <source>New project</source>
         <translation>Новый проект</translation>
     </message>
     <message>
-        <location filename="ui.py" line="310"/>
+        <location filename="ui.py" line="325"/>
         <source>Create new project</source>
         <translation>Создать новый проект</translation>
     </message>
     <message>
-        <location filename="ui.py" line="311"/>
+        <location filename="ui.py" line="326"/>
         <source>Ctrl+P</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="ui.py" line="312"/>
+        <location filename="ui.py" line="327"/>
         <source>Delete db and create new</source>
         <translation>Удалить БД и создать новую</translation>
     </message>
     <message>
-        <location filename="ui.py" line="313"/>
+        <location filename="ui.py" line="328"/>
         <source>Translate to Russian</source>
         <translation>Перевести на английский</translation>
     </message>
     <message>
-        <location filename="ui.py" line="284"/>
-        <source>?</source>
-        <translation type="obsolete">№</translation>
-    </message>
-    <message>
-        <location filename="ui.py" line="300"/>
+        <location filename="ui.py" line="315"/>
         <source>Delete project</source>
         <translation>Удилить проект</translation>
     </message>
     <message>
-        <location filename="ui.py" line="283"/>
+        <location filename="ui.py" line="298"/>
         <source>Progress</source>
         <translation>Прогресс</translation>
     </message>
     <message>
-        <location filename="ui.py" line="293"/>
+        <location filename="ui.py" line="308"/>
         <source>Creare new or change project</source>
         <translation>Изменить или создать новый проект</translation>
     </message>
     <message>
-        <location filename="ui.py" line="301"/>
+        <location filename="ui.py" line="316"/>
         <source>Open project</source>
         <translation>Открыть проект</translation>
     </message>
     <message>
-        <location filename="ui.py" line="302"/>
+        <location filename="ui.py" line="317"/>
         <source>Open module result</source>
         <translation>Открыть результат исполнения модуля</translation>
     </message>
     <message>
-        <location filename="ui.py" line="303"/>
+        <location filename="ui.py" line="318"/>
         <source>DB</source>
         <translation>БД</translation>
     </message>
     <message>
-        <location filename="ui.py" line="307"/>
+        <location filename="ui.py" line="322"/>
         <source>Minimization criterion</source>
         <translation>Критерий минимизации</translation>
     </message>
     <message>
-        <location filename="ui.py" line="305"/>
+        <location filename="ui.py" line="320"/>
         <source>Help</source>
         <translation>Помощь</translation>
     </message>
@@ -339,24 +429,29 @@ of launchs</source>
         <translation type="obsolete">Вид</translation>
     </message>
     <message>
-        <location filename="ui.py" line="316"/>
+        <location filename="ui.py" line="331"/>
         <source>Time</source>
         <translation>Время</translation>
     </message>
     <message>
-        <location filename="ui.py" line="289"/>
-        <source>№</source>
-        <translation>№</translation>
-    </message>
-    <message>
-        <location filename="ui.py" line="306"/>
+        <location filename="ui.py" line="321"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="ui.py" line="315"/>
+        <location filename="ui.py" line="330"/>
         <source>About</source>
         <translation>О программе</translation>
+    </message>
+    <message>
+        <location filename="ui.py" line="297"/>
+        <source>Open report</source>
+        <translation>Открыть отчет</translation>
+    </message>
+    <message>
+        <location filename="ui.py" line="304"/>
+        <source>№</source>
+        <translation>№</translation>
     </message>
 </context>
 <context>

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 from datetime import datetime
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 class AllTime():
     timeResult = {}
@@ -145,8 +147,8 @@ class ModuleTime():
 
 def add_(proj,modules_ParamValueRes,rwd):
     mas_of_mod_and_its_val = []
-    fl_mod = True
     for mod in modules_ParamValueRes:
+        fl_mod = True
         mas_module = rwd.select_module(mod[0],mod[1])
         if mas_module:
             # модуль уже есть (и не один мб)
@@ -200,8 +202,8 @@ def add_(proj,modules_ParamValueRes,rwd):
         for pv in m[1]:
             mas_of_values.append([pv[0],pv[1],id_binding])
         rwd.insert_few_value(mas_of_values)
-    rwd.insert_res(os.path.join(proj[1],"result"),proj[2],id_proj)
-    rwd.insert_res(os.path.join(proj[1],"result"),proj[3],id_proj)
+    rwd.insert_res(proj[2],proj[2].split('.')[1],id_proj)
+    rwd.insert_res(proj[3],proj[3].split('.')[1],id_proj)
     rwd.connection.commit()
 
 def find_(s_proj,s_mod,dt1,dt2,rwd):
@@ -236,3 +238,42 @@ def find_(s_proj,s_mod,dt1,dt2,rwd):
         if not mod_fl:
             result.pop()
     return result
+
+def delete_proj(proj_id,rwd):
+    mas_bind_id = rwd.select_binding(proj_id)
+    mas_res_path = rwd.del_and_return_mas('result','Project_id',proj_id,'Path')
+    for p in mas_res_path:
+        os.remove(p[0])
+    mods = set()
+    for b in mas_bind_id:
+        mas_modu_id = rwd.del_and_return_mas('value','Binding_id',b[0],'')
+        mods.add(b[1])
+    rwd.del_and_return_mas('binding','Project_id',proj_id,'')
+    rwd.del_by_id('project',proj_id)
+    for m in mods:
+        mas_bind = rwd.get_table_by_id('binding','Module_id',m)
+        if len(mas_bind)==0:
+            rwd.del_and_return_mas('parameter','Module_id',m,'')
+            rwd.del_by_id('module',m)
+    rwd.connection.commit()
+
+def diagram(count_of_modules,timeResult,module_name):
+    fig = plt.figure()
+    mpl.rcParams.update({'font.size': 10})
+    plt.title('Average program execution time')
+    ax = plt.axes()
+    ax.xaxis.grid(True, zorder = 1)
+    tempN = count_of_modules
+    col_vo_const_fl = timeResult.col_vo_const_fl(module_name,tempN)
+    xs = range(tempN)
+    for i in range(col_vo_const_fl):
+        plt.barh([x + 0.05 + (0.9 / col_vo_const_fl)*i for x in xs],
+                timeResult.take_list_cut(module_name,tempN,i),
+                height=(0.9 / col_vo_const_fl),
+                color=[(0.12*(i%3))/1,(0.12*(i%3+1))/1,(0.12*(i%3+2))/1],
+                label=timeResult.list_for_label(module_name,tempN,i),
+                zorder=2)
+    plt.yticks(xs,range(0,tempN))
+    plt.legend(loc='upper right')
+    # plt.show()
+    return fig

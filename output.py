@@ -11,9 +11,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form_out(object):
     def setupUi(self, Form_out):
         Form_out.setObjectName("Form_out")
-        Form_out.resize(546, 406)
+        Form_out.resize(710, 521)
         self.textEdit = QtWidgets.QTextEdit(Form_out)
-        self.textEdit.setGeometry(QtCore.QRect(20, 10, 511, 351))
+        self.textEdit.setGeometry(QtCore.QRect(10, 10, 691, 501))
         self.textEdit.setReadOnly(True)
         self.textEdit.setObjectName("textEdit")
 
