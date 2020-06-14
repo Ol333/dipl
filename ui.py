@@ -41,7 +41,7 @@ class Ui_MainWindow(object):
         self.textEdit.setReadOnly(True)
         self.textEdit.setObjectName("textEdit")
         self.pushButton_8 = QtWidgets.QPushButton(self.tab_3)
-        self.pushButton_8.setGeometry(QtCore.QRect(470, 410, 181, 25))
+        self.pushButton_8.setGeometry(QtCore.QRect(410, 410, 241, 25))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(252, 175, 62))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -294,7 +294,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "SPaCCE"))
-        self.pushButton_8.setText(_translate("MainWindow", "Open report"))
+        self.pushButton_8.setText(_translate("MainWindow", "Open report in browser"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("MainWindow", "Progress"))
         self.pushButton_2.setText(_translate("MainWindow", "Add module"))
         self.label_2.setText(_translate("MainWindow", "Prog\'s or \n"

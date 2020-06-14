@@ -7,6 +7,7 @@ V_DT = 1e-6
 V_MONOMIAL_COUNT = 5
 V_ALPHAS = {-1.0,3.0,2.0,-1.0,5.0}
 V_POWERS = {1,2,3,4,6}
+V_KINETIC_OUT = \"./out/kin1.txt\"
 
 EPSVIEWER = atril
 
@@ -16,7 +17,7 @@ CONSTFLAGS = -march=native
 RANDFLAGS = -msse2 -finline-functions -fomit-frame-pointer -fno-strict-aliasing --param max-inline-insns-single=1800
 OPTIFLAGS = -O3 $(CONSTFLAGS) $(RANDFLAGS) $(VECFLAGS)
 MTFLAGS = -DSFMT_MEXP=19937 -DHAVE_SSE2
-CFLAGS = -DN=$(V_N) -DU0=$(V_U0) -DDT=$(V_DT) -DMONOMIAL_COUNT=$(V_MONOMIAL_COUNT) -DALPHAS=$(V_ALPHAS) -DPOWERS=$(V_POWERS)
+CFLAGS = -DN=$(V_N) -DU0=$(V_U0) -DDT=$(V_DT) -DMONOMIAL_COUNT=$(V_MONOMIAL_COUNT) -DALPHAS=$(V_ALPHAS) -DPOWERS=$(V_POWERS) -DOUTPUT=$(V_KINETIC_OUT)
 LDFLAGS = -lm
 
 EXEC_KIN = kinetic

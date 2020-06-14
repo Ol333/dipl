@@ -102,9 +102,9 @@
      <widget class="QPushButton" name="pushButton_8">
       <property name="geometry">
        <rect>
-        <x>470</x>
+        <x>410</x>
         <y>410</y>
-        <width>181</width>
+        <width>241</width>
         <height>25</height>
        </rect>
       </property>
@@ -146,7 +146,7 @@
        </palette>
       </property>
       <property name="text">
-       <string>Open report</string>
+       <string>Open report in browser</string>
       </property>
      </widget>
     </widget>

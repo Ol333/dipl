@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
@@ -12,8 +12,8 @@ class AllTime():
                                         'worstAverageTime':None,
                                         'bestAverageTime':None,
                                         'bestBestTime':None,
-                                        'wwtModule':0, 'watModule':0,
-                                        'batModule':0, 'bbtModule':0,
+                                        'wwtModule':timedelta(), 'watModule':timedelta(),
+                                        'batModule':timedelta(), 'bbtModule':timedelta(),
                                         'diagram_names':[], 'diagram_values':[]}
 
     def const_rand_flags_test(self,mas_line,module_name):
@@ -49,23 +49,23 @@ class AllTime():
             self.timeResult[module_name]['bbtModule'] = mod_num
 
     def result(self,module_name):
-        res = ""
-        res += (str(self.timeResult[module_name]['worstWorstTime'])+
-                ' - worst worst Time\n')
-        res += ('worst worst Time module №:  '+
-                str(self.timeResult[module_name]['wwtModule'])+'\n')
-        res += (str(self.timeResult[module_name]['worstAverageTime'])+
-                ' - worst average Time\n')
-        res += ('worst average Time module №:  '+
-                str(self.timeResult[module_name]['watModule'])+'\n')
-        res += (str(self.timeResult[module_name]['bestAverageTime'])+
-                ' - best average Time\n')
-        res += ('best average Time module №:  '+
-                str(self.timeResult[module_name]['batModule'])+'\n')
-        res += (str(self.timeResult[module_name]['bestBestTime'])+
-                ' - best best Time\n')
-        res += ('best best Time module №:  '+
-                str(self.timeResult[module_name]['bbtModule'])+'\n')
+        res = "\n"
+        # res += "   #### " +str(self.timeResult[module_name]['worstWorstTime'])+' - worst worst Time'+"  "+'\n'
+        # res += "   #### " +'worst worst Time module №:  '+str(self.timeResult[module_name]['wwtModule'])+"  "+'\n'
+        # res += "   #### " +str(self.timeResult[module_name]['worstAverageTime'])+' - worst average Time'+"  "+'\n'
+        # res += "   #### " +'worst average Time module №:  '+str(self.timeResult[module_name]['watModule'])+"  "+'\n'
+        # res += "   #### " +str(self.timeResult[module_name]['bestAverageTime'])+' - best average Time'+"  "+'\n'
+        # res += "   #### " +'best average Time module №:  '+str(self.timeResult[module_name]['batModule'])+"  "+'\n'
+        # res += "   #### " +str(self.timeResult[module_name]['bestBestTime'])+' - best best Time'+"  "+'\n'
+        # res += "   #### " +'best best Time module №:  '+str(self.timeResult[module_name]['bbtModule'])+'\n'
+        res += "   ##### " +str(self.timeResult[module_name]['worstWorstTime'])+' - худшее худшее время'+"  "+'\n'
+        res += "   ##### " +'худшее худшее время модуль №:  '+str(self.timeResult[module_name]['wwtModule'])+"  "+'\n'
+        res += "   ##### " +str(self.timeResult[module_name]['worstAverageTime'])+' - худшее среднее время'+"  "+'\n'
+        res += "   ##### " +'худшее среднее время модуль №:  '+str(self.timeResult[module_name]['watModule'])+"  "+'\n'
+        res += "   ##### " +str(self.timeResult[module_name]['bestAverageTime'])+' - лучшее среднее время'+"  "+'\n'
+        res += "   ##### " +'лучшее среднее время модуль №:  '+str(self.timeResult[module_name]['batModule'])+"  "+'\n'
+        res += "   ##### " +str(self.timeResult[module_name]['bestBestTime'])+' - лучшее лучшее время'+"  "+'\n'
+        res += "   ##### " +'лучшее лучшее время модуль №:  '+str(self.timeResult[module_name]['bbtModule'])+'\n'
         return res
 
     def list_flags_name(self,module_name,numb_of_combinats):
@@ -95,10 +95,10 @@ class AllTime():
     def modules_res(self):
         res = ""
         for mod in self.timeResult.keys():
-            res += '#######\n'
-            res += mod + '\n'
-            res += self.result(mod)
-        res += '#######\n'
+            res += "   " +'***'+'  '+'\n'
+            res += "   " +mod+'  ' + '\n'
+            res += "   " +self.result(mod)+'  '
+        res += "\n"+"   " +'***\n'
         return res
 
 class ModuleTime():
@@ -106,7 +106,7 @@ class ModuleTime():
 
     def add_module(self):
         self.moduleInfo.append({'originParam':None,'worstTime':None,
-                                'bestTime':None,'sumTime':0})
+                                'bestTime':None,'sumTime':timedelta()})
 
     def set_orig_param(self,ind,text):
         self.moduleInfo[ind]['originParam']=text
@@ -132,11 +132,14 @@ class ModuleTime():
 
     def module_time(self,ind,aver_time):
         res = ""
-        res += '****'+'\n'
-        res += str(self.moduleInfo[ind]['worstTime'])+' - worst Time'+'\n'
-        res += str(aver_time)+' - average Time' + '\n'
-        res += str(self.moduleInfo[ind]['bestTime'])+' - best Time'+'\n'
-        res += '****'+'\n'
+        res += "   " +'****'+'  '+'\n'
+        # res += "   " +str(self.moduleInfo[ind]['worstTime'])+' - worst Time'+'  '+'\n'
+        # res += "   " +str(aver_time)+' - average Time'+'  ' + '\n'
+        # res += "   " +str(self.moduleInfo[ind]['bestTime'])+' - best Time'+'  '+'\n'
+        res += "   " +str(self.moduleInfo[ind]['worstTime'])+' - худшее время'+'  '+'\n'
+        res += "   " +str(aver_time)+' - среднее время'+'  ' + '\n'
+        res += "   " +str(self.moduleInfo[ind]['bestTime'])+' - лучшее время'+'  '+'\n'
+        res += "   " +'****'+'\n'
         return res
 
     def get_worst_time(self,ind):

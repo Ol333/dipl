@@ -20,7 +20,7 @@ int main()
     sfmt_t sfmt;
     sfmt_init_gen_rand(&sfmt, time(NULL));
     double curPt = U0, t = 0.0;
-    FILE *fp = fopen("./out/kin.txt", "w");
+    FILE *fp = fopen(OUTPUT, "w");
     // fprintf(fp, "%lf\t%lf\n", t, curPt);
     register double r, rs;
     register unsigned int j;
