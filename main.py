@@ -114,6 +114,11 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
             mb = QMessageBox()
             mb.setText(self.tr("None selected."))
             mb.exec()
+        elif (str(self.treeView.selectionModel().model().data(self.treeView.selectedIndexes()[0])) != "Project:"
+            and str(self.treeView.selectionModel().model().data(self.treeView.selectedIndexes()[0])) != "Проект:"):
+            mb = QMessageBox()
+            mb.setText(self.tr("Please, selecte project."))
+            mb.exec()
         else:
             d = QMessageBox.question(self.form, self.tr("Delete project"),
                                     self.tr("Are you sure?"),
@@ -125,16 +130,63 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                 lgc.delete_proj(self.rwd.select_proj_by_name(proj_name)[0],self.rwd)
 
     def open_proj(self):
-        temp = self.treeView.selectionModel().model()
-        proj_name = str(temp.data(self.treeView.selectedIndexes()[1]))
-        print(self.rwd.select_proj_by_name(proj_name))
-        # удалить все со средней вкладки
-        # добавить модули согласно бд и заполнить параметры
-        # :)
+        if self.treeView.selectedIndexes() == []:
+            mb = QMessageBox()
+            mb.setText(self.tr("None selected."))
+            mb.exec()
+        elif str(self.treeView.selectionModel().model().data(self.treeView.selectedIndexes()[0])) != self.tr("Project:"):
+            mb = QMessageBox()
+            mb.setText(self.tr("Please, select project."))
+            mb.exec()
+        else:
+            self.tabWidget.setCurrentIndex(1)
+            temp = self.treeView.selectionModel().model()
+            proj_name = str(temp.data(self.treeView.selectedIndexes()[1]))
+            out = lgc.get_safe_proj(self.rwd.select_proj_by_name(proj_name)[0],self.rwd)
+            self.label_6.setText(self.tr("Project name: ")+proj_name)
+            for i in range(len(out)):
+                if i>=len(self.gridElementOfInput):
+                    self.buttonClicked_addModule()
+                self.gridElementOfInput[i][0].setText(str(out[i][0]))
+                self.gridElementOfInput[i][1].setText(out[i][1])
+                self.gridElementOfInput[i][3].clear()
+                for s in out[i][2]:
+                    self.gridElementOfInput[i][3].append(s)
+                self.gridElementOfInput[i][4].setText(str(out[i][3]))
+                for j in range(len(self.gridElementOfInput[i])):
+                    self.gridElementOfInput[i][j].setEnabled(True)
+                    self.lay.itemAtPosition(i,j).widget().show()
+            for i in range(len(self.gridElementOfInput)-len(out)):
+                self.gridElementOfInput[len(out)+i][5].click()
 
     def open_mod_res(self):
-        print("open module result...")
-        # сначила сохранить эти результаты ^-^
+        if self.treeView.selectedIndexes() == []:
+            mb = QMessageBox()
+            mb.setText(self.tr("None selected."))
+            mb.exec()
+        elif str(self.treeView.selectionModel().model().data(self.treeView.selectedIndexes()[0])) == self.tr("Module:"):
+            temp = self.treeView.selectionModel().model()
+            mod_path = str(temp.data(self.treeView.selectedIndexes()[2]))
+            self.treeView.setColumnHidden(6,False)
+            bind_path = str(temp.data(self.treeView.selectedIndexes()[5]))
+            self.treeView.setColumnHidden(6,True)
+            path = os.path.join(mod_path,bind_path[2:-2])
+            # subprocess.run(["thunar",path])
+            subprocess.run(["thunar",os.path.dirname(path)])
+        elif str(self.treeView.selectionModel().model().data(self.treeView.selectedIndexes()[0])) == self.tr("Project:"):
+            temp = self.treeView.selectionModel().model()
+            proj_path = str(temp.data(self.treeView.selectedIndexes()[2]))
+            path = os.path.join(proj_path,"result")
+            subprocess.run(["thunar",path])
+        elif str(self.treeView.selectionModel().model().data(self.treeView.selectedIndexes()[0])) == self.tr("Result:"):
+            temp = self.treeView.selectionModel().model()
+            res_path = str(temp.data(self.treeView.selectedIndexes()[2]))
+            subprocess.run(["thunar",os.path.dirname(res_path)])
+        else:
+            mb = QMessageBox()
+            mb.setText(self.tr("Please, selecte module, project or result."))
+            mb.exec()
+
 
     def about_program(self):
         mb = QMessageBox()
@@ -162,26 +214,28 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
 
     def set_and_safe_one_modul_params(self,i,file_name,path):
         # изменить док
-        counter = 0
+        counter = -1
         masChange = self.gridElementOfInput[i][3].toPlainText().split('\n')
         masChange = list(map(lambda x: x.strip(),masChange))
 
         f = open(os.path.join(path,file_name),"r")
         s = ""
-        mas_paramValue = []
+        out_path = ""
         for line in f:
+            if counter+1 != len(masChange):
+                counter += 1
             self.timeResult.const_rand_flags_test(masChange[counter],
                                                   os.path.split(path)[-1])
+            test_s_mas = masChange[counter].split(' ')[0].split('_')
+            if test_s_mas[0]+test_s_mas[-1] == "VOUT":
+                out_path  = masChange[counter].split(' ')[-1]
             s += line.replace(self.moduleInfo.string_for_replace(i,counter),
                               masChange[counter])
-            if counter+1 != len(masChange):
-                mas_paramValue.append(masChange[counter].strip())
-                counter += 1
         f.close()
         f_new = open(os.path.join(path,"temporary_new_file"),"w")
         f_new.write(s)
         f_new.close()
-        return mas_paramValue
+        return masChange,out_path
 
     def execute_one_module(self,i,path,module_name,t):
         if os.path.exists('makefile'):
@@ -193,7 +247,8 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
 
     def execute_with_makefile(self,i,path,module_name,sum_t):
         res_list = []
-        res_list.extend(self.set_and_safe_one_modul_params(i,"makefile",path))
+        mas, out_path = (self.set_and_safe_one_modul_params(i,"makefile",path))
+        res_list.extend(mas)
         # запустить
         re = "\n"+ "### " + self.tr("Module") +" №"+ str(i)
         temp_txt = self.gridElementOfInput[i][3].toPlainText().split('\n')
@@ -224,12 +279,13 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
             except Exception as e:
                 self.textEdit.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
         os.remove('temporary_new_file')
-        return (res_list,re,sum_t)
+        return (res_list,re,sum_t,out_path)
 
     def execute_with_parameters(self,i,path,module_name,sum_t):
         res_list = []
-        res_list.extend(self.set_and_safe_one_modul_params(i,"parameters",path))
-        re = "\n"+ "### " + self.tr("Module №") + str(i)
+        mas, out_path = (self.set_and_safe_one_modul_params(i,"parameters",path))
+        res_list.extend(mas)
+        re = "\n"+ "### " + self.tr("Module") +" №"+ str(i)
         temp_txt = self.gridElementOfInput[i][3].toPlainText().split('\n')
         temp_txt = list(map(lambda x: "> "+x+'  \n',temp_txt))
         re += '\n' + ''.join(temp_txt) + '\n'
@@ -248,7 +304,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                 temp_mas = loc_re.split('\n')
                 for k in range(len(temp_mas)):
                     temp_mas[k] = ' ' + ("\\" if temp_mas[k].startswith("#") else "") + temp_mas[k]+"  "
-                re += "\n"+ "   " +self.tr("Launch №") + str(j)+"\n"+' '+'\n'.join(temp_mas)+ '\n'
+                re += "\n"+ "   " +self.tr("Launch") +" №"+  str(j)+"  \n"+'\n'.join(temp_mas)+ '\n'
                 temp_s = ('№'+str(j) + self.tr(' launch completed successfully. ')
                           + self.tr('Program execution time: ') + str(t))
                 self.textEdit.append(temp_s)
@@ -256,12 +312,12 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
             except Exception as e:
                 self.textEdit.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
         os.remove('temporary_new_file')
-        return (res_list,re,sum_t)
+        return (res_list,re,sum_t,out_path)
 
     def execute_with_python(self,i,path,module_name,sum_t):
         res_list = []
         re = ''
-        re += "\n"+ "### " + self.tr("Module №") + str(i)
+        re = "\n"+ "### " + self.tr("Module") +" №"+ str(i)
         temp_txt = self.gridElementOfInput[i][3].toPlainText().split('\n')
         temp_txt = list(map(lambda x: "> "+x+'  \n',temp_txt))
         re += '\n' + ''.join(temp_txt) + '\n'
@@ -277,18 +333,19 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                 temp_mas = loc_re.split('\n')
                 for k in range(len(temp_mas)):
                     temp_mas[k] = ' ' + ("\\" if temp_mas[k].startswith("#") else "") + temp_mas[k]+"  "
-                re += "\n"+ "   " +self.tr("Launch №") + str(j)+"\n"+' '+'\n'.join(temp_mas)+ '\n'
+                re += "\n"+ "   " +self.tr("Launch") +" №"+  str(j)+"  \n"+'\n'.join(temp_mas)+ '\n'
                 temp_s = ('№'+str(j)+self.tr(' launch completed successfully. ')
                           + self.tr('Program execution time: ') + str(t))
                 self.textEdit.append(temp_s)
                 sum_t += t
             except Exception as e:
                 self.textEdit.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
-        return (res_list,re,sum_t)
+        return (res_list,re,sum_t,"")
 
     def execute(self):
         while self.label_6.text() == self.tr("Project name: ...---..."):
             self.showDialog_createProject()
+        self.textEdit.clear()
         proj_name = self.label_6.text().split(":")[1].strip()
         self.tabWidget.setCurrentIndex(0) #выполняет спустя итерацию
         modules_paramValueRes = []
@@ -303,14 +360,12 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
             if self.gridElementOfInput[i][2].isEnabled():
                 count_of_modules += 1
                 count_of_execs += int(self.gridElementOfInput[i][4].text())
-        self.textEdit.append('<b>' + self.tr("Project ")
-                            + self.label_6.text().split(":")[1].strip()
-                            + self.tr(" is begin ")
-                            + datetime.now().strftime("%H:%M:%S") + '</b>')
+        self.textEdit.append('<b>'+self.tr("Project ")+proj_name
+              +self.tr(" is begin ")+datetime.now().strftime("%H:%M:%S")+'</b>')
         for i in range(len(self.gridElementOfInput)):
             if self.gridElementOfInput[i][2].isEnabled():
                 sum_t_i = timedelta()
-                module_name = self.gridElementOfInput[i][1].text()
+                module_name = self.gridElementOfInput[i][1].text().split('/')[-1]
                 set_of_modules.add(module_name)
                 self.textEdit.append('<i>'+self.tr('Module ')+str(i)+'.'
                                     +module_name+self.tr(' is begin ')
@@ -322,8 +377,10 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                 modules_paramValueRes.append([module_name,path,[]])
                 os.chdir(path)                              # меняем директорию
 
-                res_list,res,sum_t_i = self.execute_one_module(i,path,module_name,sum_t_i)
+                res_list,res,sum_t_i,out_path = self.execute_one_module(i,path,module_name,sum_t_i)
                 modules_paramValueRes[-1][-1].extend(res_list)
+                print(out_path)
+                modules_paramValueRes[-1].append(out_path)#path
                 modules_paramValueRes[-1].append(self.gridElementOfInput[i][0].text())#numb
                 modules_paramValueRes[-1].append(self.gridElementOfInput[i][4].text())#count
                 re += res
@@ -399,13 +456,16 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         report_name = os.path.join(self.base_addr,"result","res_"+proj_name)
         os.chdir(os.path.join(self.base_addr,"result"))
         f = open(report_name+'.md', 'w+')
-        f.write(re+'\n'+'\n'.join(list(map(lambda x: x+'  ',self.textEdit.toPlainText().split('\n')))))
+        f.write(re+'\n'+self.tr('### Progress')+'\n'
+            +'\n'.join(list(map(lambda x: x+'  ',self.textEdit.toPlainText().split('\n')))))
         f.close()
         subprocess.run(['grip',"res_"+proj_name+".md",'--export',"res_"+proj_name+".html","--quiet"])#--title=<title>
         self.url_report = report_name+".html"
         self.pushButton_8.setEnabled(True)
         # db project modules parametres values results(-)
-        lgc.add_([proj_name,self.base_addr,pyplot_res_name,report_name+".html"],modules_paramValueRes,self.rwd)
+        temp_proj_list = [proj_name,self.base_addr,report_name+".html"]
+        temp_proj_list.extend(mas_im_adr)
+        lgc.add_(temp_proj_list,modules_paramValueRes,self.rwd)
 
     def buttonClicked_del(self):  # hide row
         mb = QMessageBox()
@@ -529,17 +589,19 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         self.numb += 1
 
     def fill_tree(self):
-        model = QStandardItemModel(0, 6, None)
+        model = QStandardItemModel(0, 7, None)
         model.setHeaderData(0, Qt.Horizontal, self.tr(""))
         model.setHeaderData(1, Qt.Horizontal, self.tr("id"))
         model.setHeaderData(2, Qt.Horizontal, self.tr("name"))
         model.setHeaderData(3, Qt.Horizontal, self.tr("path/value"))
         model.setHeaderData(4, Qt.Horizontal, self.tr("date"))
         model.setHeaderData(5, Qt.Horizontal, self.tr("time"))
+        model.setHeaderData(6, Qt.Horizontal, self.tr("path"))
 
         self.treeView.setModel(model)
         self.treeView.setColumnHidden(1,True)
         self.treeView.setColumnWidth(0,200)
+        self.treeView.setColumnHidden(6,True)
 
         found = lgc.find_(self.lineEdit.text(),self.lineEdit_2.text(),
                           self.dateTimeEdit.dateTime().toPyDateTime(),
@@ -554,29 +616,28 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                               QStandardItem(str(pr[0][0])),
                               QStandardItem(str(pr[0][1])),
                               QStandardItem(str(pr[0][2])),
-                              QStandardItem(),QStandardItem()])
+                              QStandardItem(),QStandardItem(),QStandardItem()])
             parent = parent.child(parent.rowCount() - 1)
             for r in pr[1]:
                 parent.appendRow([QStandardItem(self.tr("result:")),
                                   QStandardItem(),QStandardItem(),
                                   QStandardItem(str(r[1])),
                                   QStandardItem(str(r[4])),
-                                  QStandardItem(str(r[5]))])
+                                  QStandardItem(str(r[5])),QStandardItem()])
             for b in pr[2:]:
                 old_parent_mod = parent
                 parent.appendRow([QStandardItem(self.tr("module:")),
                                   QStandardItem(str(b[1][0])),
                                   QStandardItem(str(b[1][1])),
-                                  QStandardItem(str(b[1][2])),
-                                  QStandardItem(b[0][1]),
-                                  QStandardItem(b[0][2])])
+                                  QStandardItem(str(b[1][2])),QStandardItem(),
+                                  QStandardItem(),QStandardItem(b[0][3])])
                 parent = parent.child(parent.rowCount() - 1)
                 for pv in b[2:]:
                     parent.appendRow([QStandardItem(self.tr("parameter,value:")),
                                       QStandardItem(str(pv[0][0])),
                                       QStandardItem(str(pv[0][2])),
                                       QStandardItem(str(pv[1][2])),
-                                      QStandardItem(), QStandardItem()])
+                                      QStandardItem(), QStandardItem(),QStandardItem()])
                 parent = old_parent_mod
             parent = old_parent_pr
 

@@ -705,7 +705,7 @@ of launchs</string>
      <widget class="QPushButton" name="pushButton_6">
       <property name="geometry">
        <rect>
-        <x>160</x>
+        <x>210</x>
         <y>450</y>
         <width>161</width>
         <height>25</height>
@@ -755,9 +755,9 @@ of launchs</string>
      <widget class="QPushButton" name="pushButton_7">
       <property name="geometry">
        <rect>
-        <x>330</x>
+        <x>410</x>
         <y>450</y>
-        <width>321</width>
+        <width>241</width>
         <height>25</height>
        </rect>
       </property>
@@ -799,7 +799,7 @@ of launchs</string>
        </palette>
       </property>
       <property name="text">
-       <string>Open module result</string>
+       <string>Open folder with result</string>
       </property>
      </widget>
     </widget>

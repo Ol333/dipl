@@ -58,14 +58,14 @@ class AllTime():
         # res += "   #### " +'best average Time module №:  '+str(self.timeResult[module_name]['batModule'])+"  "+'\n'
         # res += "   #### " +str(self.timeResult[module_name]['bestBestTime'])+' - best best Time'+"  "+'\n'
         # res += "   #### " +'best best Time module №:  '+str(self.timeResult[module_name]['bbtModule'])+'\n'
-        res += "   ##### " +str(self.timeResult[module_name]['worstWorstTime'])+' - худшее худшее время'+"  "+'\n'
-        res += "   ##### " +'худшее худшее время модуль №:  '+str(self.timeResult[module_name]['wwtModule'])+"  "+'\n'
-        res += "   ##### " +str(self.timeResult[module_name]['worstAverageTime'])+' - худшее среднее время'+"  "+'\n'
-        res += "   ##### " +'худшее среднее время модуль №:  '+str(self.timeResult[module_name]['watModule'])+"  "+'\n'
-        res += "   ##### " +str(self.timeResult[module_name]['bestAverageTime'])+' - лучшее среднее время'+"  "+'\n'
-        res += "   ##### " +'лучшее среднее время модуль №:  '+str(self.timeResult[module_name]['batModule'])+"  "+'\n'
-        res += "   ##### " +str(self.timeResult[module_name]['bestBestTime'])+' - лучшее лучшее время'+"  "+'\n'
-        res += "   ##### " +'лучшее лучшее время модуль №:  '+str(self.timeResult[module_name]['bbtModule'])+'\n'
+        res += "   ##### " +str(self.timeResult[module_name]['worstWorstTime'])+' - максимальное время'+"  "+'\n'
+        res += "   ##### " +'максимальное время у модуля №:  '+str(self.timeResult[module_name]['wwtModule'])+"  "+'\n'
+        res += "   ##### " +str(self.timeResult[module_name]['worstAverageTime'])+' - максимальное среднее время'+"  "+'\n'
+        res += "   ##### " +'максимальное среднее время у модуля №:  '+str(self.timeResult[module_name]['watModule'])+"  "+'\n'
+        res += "   ##### " +str(self.timeResult[module_name]['bestAverageTime'])+' - минимальное среднее время'+"  "+'\n'
+        res += "   ##### " +'минимальное среднее время у модуля №:  '+str(self.timeResult[module_name]['batModule'])+"  "+'\n'
+        res += "   ##### " +str(self.timeResult[module_name]['bestBestTime'])+' - минимальное время'+"  "+'\n'
+        res += "   ##### " +'минимальное время у модуля №:  '+str(self.timeResult[module_name]['bbtModule'])+'\n'
         return res
 
     def list_flags_name(self,module_name,numb_of_combinats):
@@ -136,9 +136,9 @@ class ModuleTime():
         # res += "   " +str(self.moduleInfo[ind]['worstTime'])+' - worst Time'+'  '+'\n'
         # res += "   " +str(aver_time)+' - average Time'+'  ' + '\n'
         # res += "   " +str(self.moduleInfo[ind]['bestTime'])+' - best Time'+'  '+'\n'
-        res += "   " +str(self.moduleInfo[ind]['worstTime'])+' - худшее время'+'  '+'\n'
+        res += "   " +str(self.moduleInfo[ind]['worstTime'])+' - максимальное время'+'  '+'\n'
         res += "   " +str(aver_time)+' - среднее время'+'  ' + '\n'
-        res += "   " +str(self.moduleInfo[ind]['bestTime'])+' - лучшее время'+'  '+'\n'
+        res += "   " +str(self.moduleInfo[ind]['bestTime'])+' - минимальное время'+'  '+'\n'
         res += "   " +'****'+'\n'
         return res
 
@@ -170,7 +170,7 @@ def add_(proj,modules_ParamValueRes,rwd):
                     pv_ind += 1
                 if fl_param:
                     pv_ind = 0
-                    mas_of_mod_and_its_val.append([mas_module[mod_ind],[],mod[-2],mod[-1]])
+                    mas_of_mod_and_its_val.append([mas_module[mod_ind],[],mod[-2],mod[-1],mod[-3]])
                     while pv_ind < len(mod[2]):
                         param,value = mod[2][pv_ind].split('=',1)
                         mas_of_mod_and_its_val[-1][1].append([mas_param_id[pv_ind],value.strip().strip("'")])
@@ -180,7 +180,7 @@ def add_(proj,modules_ParamValueRes,rwd):
         # модуля нет или ни один не совпадает
         if fl_mod:
             id_mod = rwd.insert_module(mod[0],mod[1])
-            mas_of_mod_and_its_val.append([id_mod,[],mod[-2],mod[-1]])
+            mas_of_mod_and_its_val.append([id_mod,[],mod[-2],mod[-1],mod[-3]])
             for PV in mod[2]:
                 param,value = PV.split('=',1)
                 id_param = rwd.insert_param(id_mod,param.strip(),"string")
@@ -200,13 +200,13 @@ def add_(proj,modules_ParamValueRes,rwd):
         id_proj = rwd.insert_proj(proj[0],proj[1])
     # создать результат и привязки
     for m in mas_of_mod_and_its_val:
-        id_binding = rwd.insert_binding(m[2],m[3],"",id_proj,m[0])
+        id_binding = rwd.insert_binding(m[2],m[3],m[4],id_proj,m[0])
         mas_of_values = []
         for pv in m[1]:
             mas_of_values.append([pv[0],pv[1],id_binding])
         rwd.insert_few_value(mas_of_values)
-    rwd.insert_res(proj[2],proj[2].split('.')[1],id_proj)
-    rwd.insert_res(proj[3],proj[3].split('.')[1],id_proj)
+    for p in proj[2:]:
+        rwd.insert_res(p,p.split('.')[1],id_proj)
     rwd.connection.commit()
 
 def find_(s_proj,s_mod,dt1,dt2,rwd):
@@ -243,14 +243,14 @@ def find_(s_proj,s_mod,dt1,dt2,rwd):
     return result
 
 def delete_proj(proj_id,rwd):
-    mas_bind_id = rwd.select_binding(proj_id)
+    mas_bind_id = rwd.select_binding_with_condition(proj_id)
     mas_res_path = rwd.del_and_return_mas('result','Project_id',proj_id,'Path')
     for p in mas_res_path:
         os.remove(p[0])
     mods = set()
     for b in mas_bind_id:
         mas_modu_id = rwd.del_and_return_mas('value','Binding_id',b[0],'')
-        mods.add(b[1])
+        mods.add(b[5])
     rwd.del_and_return_mas('binding','Project_id',proj_id,'')
     rwd.del_by_id('project',proj_id)
     for m in mods:
@@ -280,3 +280,16 @@ def diagram(count_of_modules,timeResult,module_name):
     plt.legend(loc='upper right')
     # plt.show()
     return fig
+
+def get_safe_proj(proj_id,rwd):
+    res = []
+    mas_bind = rwd.select_binding_with_condition(proj_id)
+    for b in mas_bind:
+        mod_line = rwd.get_line_by_id("module", 'Id', b[5])
+        mas_val = rwd.select_value_by_binding(b[0])
+        s = []
+        for i in range(len(mas_val)):
+            param_line = rwd.get_line_by_id("parameter", "Id", mas_val[i][0])
+            s.append(param_line[2] + ' = ' + mas_val[i][1])
+        res.append([b[1], mod_line[2], s, b[2]])
+    return res

@@ -218,7 +218,7 @@ class DbWork():
         return self.cursor.fetchall()[0][0]
 
     def insert_few_value(self,mas):
-        s = """INSERT INTO "value" ("Id","Parameter_id","Value","Binding_id" )
+        s = """INSERT INTO "value" ("Id","Parameter_id","Value","Binding_id")
                VALUES """
         for m in mas:
             s += """(default,{},'{}',{}), """.format(m[0],m[1],m[2])
@@ -226,16 +226,16 @@ class DbWork():
 
     def select_binding(self,id_proj):
         mas = []
-        self.cursor.execute("""SELECT "Id", "Module_id"
+        self.cursor.execute("""SELECT "Module_id"
                         FROM "binding"
                         WHERE "Project_id"={};
                         """.format(id_proj))
         for a in self.cursor.fetchall():
-            mas.append(a)
+            mas.append(a[0])
         return mas
 
     def insert_binding(self,numb,count,path,id_proj,id_mod):
-        self.cursor.execute("""INSERT INTO "binding" ("Id","Order_number","Count","Path","Project_id","Module_id" )
+        self.cursor.execute("""INSERT INTO "binding" ("Id","Order_number","Count","Path","Project_id","Module_id")
                         VALUES (default,{},{},'{}',{},{})
                         RETURNING "Id";
                         """.format(numb,count,path,id_proj,id_mod))
@@ -273,5 +273,15 @@ class DbWork():
             for a in self.cursor.fetchall():
                 mas.append(a)
             return mas
+
+    def select_value_by_binding(self,bind_id):
+        mas = []
+        self.cursor.execute("""SELECT "Parameter_id","Value"
+                        FROM "value"
+                        WHERE "Binding_id"={};
+                        """.format(bind_id))
+        for a in self.cursor.fetchall():
+            mas.append(a)
+        return mas
 
     # self.connection.close()
