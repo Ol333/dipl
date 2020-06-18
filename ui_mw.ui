@@ -819,6 +819,7 @@ of launchs</string>
      <string>&amp;File</string>
     </property>
     <addaction name="actionDelete_db_and_create_new"/>
+    <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -843,7 +844,15 @@ of launchs</string>
     <property name="title">
      <string>Execute</string>
     </property>
+    <widget class="QMenu" name="menuSearch_algorithm">
+     <property name="title">
+      <string>Search algorithm</string>
+     </property>
+     <addaction name="actionExhaustive_search"/>
+     <addaction name="actionGenetic"/>
+    </widget>
     <addaction name="actionNew_project"/>
+    <addaction name="menuSearch_algorithm"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuExecute"/>
@@ -866,6 +875,9 @@ of launchs</string>
    <property name="text">
     <string>Delete db and create new</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionTranslate">
    <property name="text">
@@ -885,6 +897,21 @@ of launchs</string>
   <action name="actionTime_2">
    <property name="text">
     <string>Time</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionExhaustive_search">
+   <property name="text">
+    <string>Exhaustive search +</string>
+   </property>
+  </action>
+  <action name="actionGenetic">
+   <property name="text">
+    <string>Genetic</string>
    </property>
   </action>
  </widget>

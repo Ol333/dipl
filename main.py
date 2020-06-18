@@ -61,12 +61,19 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
 
     def showDialog_createProject(self):
         qwe1 = QWidget()
-        text1, ok1 = QInputDialog.getText(qwe1, self.tr('New project'),
+        t = QInputDialog()
+        t.setOkButtonText(self.tr("OK"))
+        t.setCancelButtonText(self.tr("Cancel"))
+        print(t.cancelButtonText())
+        text1, ok1 = t.getText(qwe1, self.tr('New project'),
             self.tr('Enter new project name:'))
+        # text1, ok1 = QInputDialog.getText(qwe1, self.tr('New project'),
+        #     self.tr('Enter new project name:'))
         if ok1:
             if (self.rwd.select_proj_by_name(text1) != None):
                 mb = QMessageBox()
-                mb.setText(self.tr("Already exists."))
+                mb.setWindowTitle(self.tr("New project"))
+                mb.setText(self.tr("Project already exists."))
                 mb.exec()
                 self.showDialog_createProject()
             else:
@@ -104,7 +111,6 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         self.app.installTranslator(self.transl)
         self.retranslateUi(self.window_main)
         self.ui_param.retranslateUi(self.window_param)
-        self.ui_output.retranslateUi(self.window_output)
         for i in self.gridElementOfInput:
             i[2].setText(self.tr("Change \nparameters"))
             i[5].setText(self.tr("Delete"))
@@ -112,11 +118,13 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
     def del_proj(self):
         if self.treeView.selectedIndexes() == []:
             mb = QMessageBox()
+            mb.setWindowTitle(self.tr("Delete project"))
             mb.setText(self.tr("None selected."))
             mb.exec()
         elif (str(self.treeView.selectionModel().model().data(self.treeView.selectedIndexes()[0])) != "Project:"
             and str(self.treeView.selectionModel().model().data(self.treeView.selectedIndexes()[0])) != "Проект:"):
             mb = QMessageBox()
+            mb.setWindowTitle(self.tr("Delete project"))
             mb.setText(self.tr("Please, selecte project."))
             mb.exec()
         else:
@@ -132,10 +140,12 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
     def open_proj(self):
         if self.treeView.selectedIndexes() == []:
             mb = QMessageBox()
+            mb.setWindowTitle(self.tr("Open project"))
             mb.setText(self.tr("None selected."))
             mb.exec()
         elif str(self.treeView.selectionModel().model().data(self.treeView.selectedIndexes()[0])) != self.tr("Project:"):
             mb = QMessageBox()
+            mb.setWindowTitle(self.tr("Open project"))
             mb.setText(self.tr("Please, select project."))
             mb.exec()
         else:
@@ -162,6 +172,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
     def open_mod_res(self):
         if self.treeView.selectedIndexes() == []:
             mb = QMessageBox()
+            mb.setWindowTitle(self.tr("Open result"))
             mb.setText(self.tr("None selected."))
             mb.exec()
         elif str(self.treeView.selectionModel().model().data(self.treeView.selectedIndexes()[0])) == self.tr("Module:"):
@@ -184,12 +195,14 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
             subprocess.run(["thunar",os.path.dirname(res_path)])
         else:
             mb = QMessageBox()
+            mb.setWindowTitle(self.tr("Open result"))
             mb.setText(self.tr("Please, selecte module, project or result."))
             mb.exec()
 
 
     def about_program(self):
         mb = QMessageBox()
+        mb.setWindowTitle(self.tr("About"))
         mb.setText(self.tr("It's program.\nAuthor is O.P.Bobrovskaya."))
         mb.exec()
 
@@ -379,7 +392,6 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
 
                 res_list,res,sum_t_i,out_path = self.execute_one_module(i,path,module_name,sum_t_i)
                 modules_paramValueRes[-1][-1].extend(res_list)
-                print(out_path)
                 modules_paramValueRes[-1].append(out_path)#path
                 modules_paramValueRes[-1].append(self.gridElementOfInput[i][0].text())#numb
                 modules_paramValueRes[-1].append(self.gridElementOfInput[i][4].text())#count
@@ -421,9 +433,10 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                 sum_er.append(list(map(lambda x:'№'+str(i)+self.tr(' module ')+x,sum_er_i)))
         re += self.timeResult.modules_res()
         list_of_flags = self.timeResult.list_flags_name(module_name,None)
+        # list_of_flags = self.timeResult.list_flags_name(module_name,32)
         for i in range(len(list_of_flags)):
             list_of_flags[i] = str(i)+'. '+list_of_flags[i]
-        re += '\n'.join(list_of_flags)+"  \n"
+        re += '  \n'.join(list_of_flags)+"  \n"
         self.textEdit.append('<b>'+self.tr("Project ")+proj_name
                             +self.tr(" is finished ")
                             +datetime.now().strftime("%H:%M:%S")+'</b>')
@@ -448,18 +461,21 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         for i in range(len(mas_fig)):
             # save pyplot
             pyplot_res_name = os.path.join(self.base_addr,"result","res_"
-                                           +proj_name+'_'+str(i)+'.png')
+                                           + proj_name + '_'
+                                           + datetime.now().strftime("%H_%M")
+                                           + '_' + str(i) + '.png')
             mas_fig[i].savefig(pyplot_res_name)
             mas_im_adr.append(pyplot_res_name)
         for i in range(len(mas_im_adr)):
             re += """![Diagram {}]({})  \n""".format(i,mas_im_adr[i])
-        report_name = os.path.join(self.base_addr,"result","res_"+proj_name)
+        rep_short_nam = "res_"+proj_name+'_'+ datetime.now().strftime("%H_%M")
+        report_name = os.path.join(self.base_addr,"result",rep_short_nam)
         os.chdir(os.path.join(self.base_addr,"result"))
         f = open(report_name+'.md', 'w+')
         f.write(re+'\n'+self.tr('### Progress')+'\n'
             +'\n'.join(list(map(lambda x: x+'  ',self.textEdit.toPlainText().split('\n')))))
         f.close()
-        subprocess.run(['grip',"res_"+proj_name+".md",'--export',"res_"+proj_name+".html","--quiet"])#--title=<title>
+        subprocess.run(['grip',rep_short_nam+".md",'--export',rep_short_nam+".html","--quiet"])#--title=<title>
         self.url_report = report_name+".html"
         self.pushButton_8.setEnabled(True)
         # db project modules parametres values results(-)
@@ -470,6 +486,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
     def buttonClicked_del(self):  # hide row
         mb = QMessageBox()
         ind = int(str(self.form.sender().objectName())[3:])
+        mb.setWindowTitle(self.tr("Delete module"))
         mb.setText(self.tr("del ")+str(ind))
         mb.exec()
         for i in range(len(self.gridElementOfInput[ind])):
@@ -612,28 +629,28 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         parent = root
         for pr in found:
             old_parent_pr = parent
-            parent.appendRow([QStandardItem(self.tr("project:")),
+            parent.appendRow([QStandardItem(self.tr("Project:")),
                               QStandardItem(str(pr[0][0])),
                               QStandardItem(str(pr[0][1])),
                               QStandardItem(str(pr[0][2])),
                               QStandardItem(),QStandardItem(),QStandardItem()])
             parent = parent.child(parent.rowCount() - 1)
             for r in pr[1]:
-                parent.appendRow([QStandardItem(self.tr("result:")),
+                parent.appendRow([QStandardItem(self.tr("Result:")),
                                   QStandardItem(),QStandardItem(),
                                   QStandardItem(str(r[1])),
                                   QStandardItem(str(r[4])),
                                   QStandardItem(str(r[5])),QStandardItem()])
             for b in pr[2:]:
                 old_parent_mod = parent
-                parent.appendRow([QStandardItem(self.tr("module:")),
+                parent.appendRow([QStandardItem(self.tr("Module:")),
                                   QStandardItem(str(b[1][0])),
                                   QStandardItem(str(b[1][1])),
                                   QStandardItem(str(b[1][2])),QStandardItem(),
                                   QStandardItem(),QStandardItem(b[0][3])])
                 parent = parent.child(parent.rowCount() - 1)
                 for pv in b[2:]:
-                    parent.appendRow([QStandardItem(self.tr("parameter,value:")),
+                    parent.appendRow([QStandardItem(self.tr("Parameter,Value:")),
                                       QStandardItem(str(pv[0][0])),
                                       QStandardItem(str(pv[0][2])),
                                       QStandardItem(str(pv[1][2])),
@@ -652,8 +669,8 @@ class Param(Ui_Form_param, QObject):
         self.scrollAreaWidgetContents.setLayout(self.lay)
 
     def connect_slots(self):
-        self.buttonBox.accepted.connect(self.buttonClicked_accept)
-        self.buttonBox.rejected.connect(self.buttonClicked_reject)
+        self.pushButton_2.clicked.connect(self.buttonClicked_accept)
+        self.pushButton.clicked.connect(self.buttonClicked_reject)
 
     def buttonClicked_accept(self):
         combination = []

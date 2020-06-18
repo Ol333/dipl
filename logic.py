@@ -196,15 +196,22 @@ def add_(proj,modules_ParamValueRes,rwd):
                     mas_safe_module.remove(m[0])
             if len(mas_safe_module) != 0:
                 id_proj = rwd.insert_proj(proj[0],proj[1])
+                # создать результат и привязки
+                for m in mas_of_mod_and_its_val:
+                    id_binding = rwd.insert_binding(m[2],m[3],m[4],id_proj,m[0])
+                    mas_of_values = []
+                    for pv in m[1]:
+                        mas_of_values.append([pv[0],pv[1],id_binding])
+                    rwd.insert_few_value(mas_of_values)
     else:
         id_proj = rwd.insert_proj(proj[0],proj[1])
-    # создать результат и привязки
-    for m in mas_of_mod_and_its_val:
-        id_binding = rwd.insert_binding(m[2],m[3],m[4],id_proj,m[0])
-        mas_of_values = []
-        for pv in m[1]:
-            mas_of_values.append([pv[0],pv[1],id_binding])
-        rwd.insert_few_value(mas_of_values)
+        # создать результат и привязки
+        for m in mas_of_mod_and_its_val:
+            id_binding = rwd.insert_binding(m[2],m[3],m[4],id_proj,m[0])
+            mas_of_values = []
+            for pv in m[1]:
+                mas_of_values.append([pv[0],pv[1],id_binding])
+            rwd.insert_few_value(mas_of_values)
     for p in proj[2:]:
         rwd.insert_res(p,p.split('.')[1],id_proj)
     rwd.connection.commit()
@@ -262,18 +269,21 @@ def delete_proj(proj_id,rwd):
 
 def diagram(count_of_modules,timeResult,module_name):
     fig = plt.figure()
+    # plt.clf()
     mpl.rcParams.update({'font.size': 10})
-    plt.title('Average program execution time')
+    # plt.title('Average program execution time')
+    plt.title('Среднее время выполнения программы')
     ax = plt.axes()
     ax.xaxis.grid(True, zorder = 1)
     tempN = count_of_modules
+    # tempN = 32
     col_vo_const_fl = timeResult.col_vo_const_fl(module_name,tempN)
     xs = range(tempN)
     for i in range(col_vo_const_fl):
         plt.barh([x + 0.05 + (0.9 / col_vo_const_fl)*i for x in xs],
                 timeResult.take_list_cut(module_name,tempN,i),
                 height=(0.9 / col_vo_const_fl),
-                color=[(0.12*(i%3))/1,(0.12*(i%3+1))/1,(0.12*(i%3+2))/1],
+                color=[(0.22*(i%3))/1,(0.22*(i%3+1))/1,(0.22*(i%3+2))/1],
                 label=timeResult.list_for_label(module_name,tempN,i),
                 zorder=2)
     plt.yticks(xs,range(0,tempN))
