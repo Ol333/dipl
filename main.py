@@ -19,6 +19,7 @@ from ui import Ui_MainWindow
 from param import Ui_Form_param
 import rab_with_db
 import logic as lgc
+from genetic import Genetic
 
 class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
     numb = 0
@@ -30,6 +31,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
     base_addr = None
     curInd = None
     url_report = None
+    ga = None
 
     def __init__(self, form1, com, form2, ui, transl, app):
         super().__init__()
@@ -62,13 +64,10 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
     def showDialog_createProject(self):
         qwe1 = QWidget()
         t = QInputDialog()
-        t.setOkButtonText(self.tr("OK"))
-        t.setCancelButtonText(self.tr("Cancel"))
-        print(t.cancelButtonText())
+        t.setOkButtonText(self.tr("OK")) # не работает
+        t.setCancelButtonText(self.tr("Cancel")) # не работает
         text1, ok1 = t.getText(qwe1, self.tr('New project'),
             self.tr('Enter new project name:'))
-        # text1, ok1 = QInputDialog.getText(qwe1, self.tr('New project'),
-        #     self.tr('Enter new project name:'))
         if ok1:
             if (self.rwd.select_proj_by_name(text1) != None):
                 mb = QMessageBox()
@@ -199,7 +198,6 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
             mb.setText(self.tr("Please, selecte module, project or result."))
             mb.exec()
 
-
     def about_program(self):
         mb = QMessageBox()
         mb.setWindowTitle(self.tr("About"))
@@ -209,6 +207,14 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
     def open_diagram(self):
         new = 2
         webbrowser.open(self.url_report,new=new)
+
+    def set_exhaustive_search(self):
+        self.actionExhaustive_search.setText(self.tr("Exhaustive search +"))
+        self.actionGenetic.setText(self.tr("Genetic"))
+
+    def set_genetic(self):
+        self.actionExhaustive_search.setText(self.tr("Exhaustive search"))
+        self.actionGenetic.setText(self.tr("Genetic +"))
 
     def connect_slots(self):
         self.pushButton.clicked.connect(self.execute)
@@ -224,6 +230,8 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         self.pushButton_6.clicked.connect(self.open_proj)
         self.pushButton_7.clicked.connect(self.open_mod_res)
         self.pushButton_8.clicked.connect(self.open_diagram)
+        self.actionExhaustive_search.triggered.connect(self.set_exhaustive_search)
+        self.actionGenetic.triggered.connect(self.set_genetic)
 
     def set_and_safe_one_modul_params(self,i,file_name,path):
         # изменить док
@@ -355,6 +363,62 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                 self.textEdit.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
         return (res_list,re,sum_t,"")
 
+    def module_run_inter(self,i,set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs):
+        sum_t_i = timedelta()
+        module_name = self.gridElementOfInput[i][1].text().split('/')[-1]
+        set_of_modules.add(module_name)
+        self.textEdit.append('<i>'+self.tr('Module ')+str(i)+'.'
+                            +module_name+self.tr(' is begin ')
+                            +datetime.now().strftime("%H:%M:%S")+'</i>')
+        self.timeResult.module_name_exist(module_name)
+
+        path = self.base_addr
+        path = os.path.join(path,"programs",module_name)
+        modules_paramValueRes.append([module_name,path,[]])
+        os.chdir(path)                              # меняем директорию
+
+        res_list,res,sum_t_i,out_path = self.execute_one_module(i,path,module_name,sum_t_i)
+        modules_paramValueRes[-1][-1].extend(res_list)
+        modules_paramValueRes[-1].append(out_path)#path
+        modules_paramValueRes[-1].append(self.gridElementOfInput[i][0].text())#numb
+        modules_paramValueRes[-1].append(self.gridElementOfInput[i][4].text())#count
+        re += res
+        aver_time = self.moduleInfo.aver_time(i,
+                            int(self.gridElementOfInput[i][4].text()))
+
+        re += self.moduleInfo.module_time(i,aver_time)
+        self.timeResult.add_time_of_module(module_name,aver_time.total_seconds())
+        self.timeResult.test_time_values(module_name,
+                                    self.moduleInfo.get_worst_time(i),
+                                    aver_time,
+                                    self.moduleInfo.get_best_time(i),
+                                    i)
+        self.textEdit.append('<i>'+self.tr('Module ')+str(i)+'.'
+                            +module_name+self.tr(' is finished ')
+                            +datetime.now().strftime("%H:%M:%S")+'</i>')
+
+        temp_txt = self.textEdit.toPlainText().split('\n')
+        temp_txt = list(map(lambda x: x.strip(),temp_txt))
+        sum_er_i = []
+        for s in temp_txt[-int(self.gridElementOfInput[i][4].text())-1:-1]:
+            if s.find("Error") != -1 or s.find("Ошибка") != -1:
+                sum_er_i.append(s)
+                er_fl = True
+        self.textEdit.append('<i>'+self.tr('Total module lead time : ')
+                            +str(sum_t_i)
+                            +self.tr('. Successfully completed launchs: ')
+                            +'<b>'
+                            +str(int(self.gridElementOfInput[i][4].text())-len(sum_er_i))
+                            +'/'+self.gridElementOfInput[i][4].text()
+                            +'</b></i>')
+        self.progressBar.setValue(((self.progressBar.value()
+                                    /100*count_of_execs
+                    + int(self.gridElementOfInput[i][4].text()))
+                                                   /count_of_execs)*100)
+        sum_t += sum_t_i
+        sum_er.append(list(map(lambda x:'№'+str(i)+self.tr(' module ')+x,sum_er_i)))
+        return set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs,module_name
+
     def execute(self):
         while self.label_6.text() == self.tr("Project name: ...---..."):
             self.showDialog_createProject()
@@ -375,65 +439,23 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                 count_of_execs += int(self.gridElementOfInput[i][4].text())
         self.textEdit.append('<b>'+self.tr("Project ")+proj_name
               +self.tr(" is begin ")+datetime.now().strftime("%H:%M:%S")+'</b>')
-        for i in range(len(self.gridElementOfInput)):
-            if self.gridElementOfInput[i][2].isEnabled():
-                sum_t_i = timedelta()
-                module_name = self.gridElementOfInput[i][1].text().split('/')[-1]
-                set_of_modules.add(module_name)
-                self.textEdit.append('<i>'+self.tr('Module ')+str(i)+'.'
-                                    +module_name+self.tr(' is begin ')
-                                    +datetime.now().strftime("%H:%M:%S")+'</i>')
-                self.timeResult.module_name_exist(module_name)
 
-                path = self.base_addr
-                path = os.path.join(path,"programs",module_name)
-                modules_paramValueRes.append([module_name,path,[]])
-                os.chdir(path)                              # меняем директорию
+        if self.actionGenetic.text() == self.tr("Genetic +"):
+            mod_numb_launch = int(self.gridElementOfInput[self.curInd][4].text())
+            for i in range(len(self.gridElementOfInput[self.curInd])):
+                self.gridElementOfInput[self.curInd][i].setEnabled(False)
+                self.lay.itemAtPosition(self.curInd,i).widget().hide()
 
-                res_list,res,sum_t_i,out_path = self.execute_one_module(i,path,module_name,sum_t_i)
-                modules_paramValueRes[-1][-1].extend(res_list)
-                modules_paramValueRes[-1].append(out_path)#path
-                modules_paramValueRes[-1].append(self.gridElementOfInput[i][0].text())#numb
-                modules_paramValueRes[-1].append(self.gridElementOfInput[i][4].text())#count
-                re += res
-                aver_time = self.moduleInfo.aver_time(i,
-                                    int(self.gridElementOfInput[i][4].text()))
-
-                re += self.moduleInfo.module_time(i,aver_time)
-                self.timeResult.add_time_of_module(module_name,aver_time.total_seconds())
-                self.timeResult.test_time_values(module_name,
-                                            self.moduleInfo.get_worst_time(i),
-                                            aver_time,
-                                            self.moduleInfo.get_best_time(i),
-                                            i)
-                self.textEdit.append('<i>'+self.tr('Module ')+str(i)+'.'
-                                    +module_name+self.tr(' is finished ')
-                                    +datetime.now().strftime("%H:%M:%S")+'</i>')
-
-                temp_txt = self.textEdit.toPlainText().split('\n')
-                temp_txt = list(map(lambda x: x.strip(),temp_txt))
-                sum_er_i = []
-                for s in temp_txt[-int(self.gridElementOfInput[i][4].text())-1:-1]:
-                    if s.find("Error") != -1 or s.find("Ошибка") != -1:
-                        sum_er_i.append(s)
-                        er_fl = True
-
-                self.textEdit.append('<i>'+self.tr('Total module lead time : ')
-                                    +str(sum_t_i)
-                                    +self.tr('. Successfully completed launchs: ')
-                                    +'<b>'
-                                    +str(int(self.gridElementOfInput[i][4].text())-len(sum_er_i))
-                                    +'/'+self.gridElementOfInput[i][4].text()
-                                    +'</b></i>')
-                self.progressBar.setValue(((self.progressBar.value()
-                                            /100*count_of_execs
-                            + int(self.gridElementOfInput[i][4].text()))
-                                                           /count_of_execs)*100)
-                sum_t += sum_t_i
-                sum_er.append(list(map(lambda x:'№'+str(i)+self.tr(' module ')+x,sum_er_i)))
+            count_of_modules = 40
+            all_launch = count_of_modules * mod_numb_launch
+            set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs,module_name = self.ga.run_algorithm([0,set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,all_launch])
+        else:
+            for i in range(len(self.gridElementOfInput)):
+                if self.gridElementOfInput[i][2].isEnabled():
+                    set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs,module_name = self.module_run_inter(i,set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs)
         re += self.timeResult.modules_res()
-        list_of_flags = self.timeResult.list_flags_name(module_name,None)
-        # list_of_flags = self.timeResult.list_flags_name(module_name,32)
+        list_of_flags = self.timeResult.list_flags_name(module_name, None)
+        # list_of_flags = self.timeResult.list_flags_name(module_name, 32)
         for i in range(len(list_of_flags)):
             list_of_flags[i] = str(i)+'. '+list_of_flags[i]
         re += '  \n'.join(list_of_flags)+"  \n"
@@ -478,9 +500,9 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         subprocess.run(['grip',rep_short_nam+".md",'--export',rep_short_nam+".html","--quiet"])#--title=<title>
         self.url_report = report_name+".html"
         self.pushButton_8.setEnabled(True)
-        # db project modules parametres values results(-)
         temp_proj_list = [proj_name,self.base_addr,report_name+".html"]
         temp_proj_list.extend(mas_im_adr)
+        # db project modules parametres values results(-)
         lgc.add_(temp_proj_list,modules_paramValueRes,self.rwd)
 
     def buttonClicked_del(self):  # hide row
@@ -547,6 +569,46 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
             self.gridElementOfInput[ind][3].setEnabled(False)
             self.gridElementOfInput[ind][4].setEnabled(False)
 
+    def fillParamLineEdit_ExhaustiveSearch(self, mas):
+        for k in range(1 if len(mas[1][1])==0 else len(mas[1][1][0]['param'])+1): #перебор по одному
+            numbFl = len(mas[1][0])
+            for i in range(2**numbFl): #перебор всех возможных комбинаций
+                self.buttonClicked_addModule()
+                self.gridElementOfInput[self.numb-1][1].setText(self.gridElementOfInput[self.curInd][1].text())
+                self.gridElementOfInput[self.numb-1][4].setText(self.gridElementOfInput[self.curInd][4].text())
+                strings = self.gridElementOfInput[self.curInd][3].toPlainText().split('\n')
+                for numb in mas[0][1]:
+                    temp = strings[numb].split('=',1)
+                    temp[1] = ''
+                    strings[numb] = '='.join(temp)
+                if len(mas[1][1]) != 0:
+                    temp = strings[mas[1][1][0]['number']].split('=',2)
+                    if k<len(mas[1][1][0]['param']):
+                        temp[2] = mas[1][1][0]['param'][k]
+                        strings[mas[1][1][0]['number']] = '='.join(temp)
+                    else:
+                        strings[mas[1][1][0]['number']] = temp[0] + '='
+                for j in range(numbFl):
+                    if i&(0b1 << j):
+                        temp = strings[mas[1][0][j]['number']].split('=',1)
+                        temp[1] += mas[1][0][j]['param'] + ' '
+                        strings[mas[1][0][j]['number']] = '='.join(temp)
+                self.gridElementOfInput[self.numb-1][3].clear()
+                for i in strings:
+                    self.gridElementOfInput[self.numb-1][3].append(i.strip())
+        for i in range(len(self.gridElementOfInput[self.curInd])):
+            self.gridElementOfInput[self.curInd][i].setEnabled(False)
+            self.lay.itemAtPosition(self.curInd,i).widget().hide()
+
+    def fillParamLineEdit_Genetic(self, mas):
+        mas_param_for_change = [[],[]]
+        strings = self.gridElementOfInput[self.curInd][3].toPlainText().split('\n')
+        for numb in mas[0][1]:
+            if not numb in mas_param_for_change[1]:
+                mas_param_for_change[0].append(strings[numb])
+                mas_param_for_change[1].append(numb)
+        self.ga = Genetic(mas_param_for_change, self)
+
     def fillParamLineEdit(self):
         self.gridElementOfInput[self.curInd][3].clear()
         mas = self.ui_param.return_outMas()
@@ -554,35 +616,22 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
             self.gridElementOfInput[self.curInd][3].append(i)
 
         if mas[0][0] == 'someone want a combination':
-            for k in range(1 if len(mas[1][1])==0 else len(mas[1][1][0]['param'])+1): #перебор по одному
-                numbFl = len(mas[1][0])
-                for i in range(2**numbFl): #перебор всех возможных комбинаций
-                    self.buttonClicked_addModule()
-                    self.gridElementOfInput[self.numb-1][1].setText(self.gridElementOfInput[self.curInd][1].text())
-                    self.gridElementOfInput[self.numb-1][4].setText(self.gridElementOfInput[self.curInd][4].text())
-                    strings = self.gridElementOfInput[self.curInd][3].toPlainText().split('\n')
-                    for numb in mas[0][1]:
-                        temp = strings[numb].split('=',1)
-                        temp[1] = ''
-                        strings[numb] = '='.join(temp)
-                    if len(mas[1][1]) != 0:
-                        temp = strings[mas[1][1][0]['number']].split('=',2)
-                        if k<len(mas[1][1][0]['param']):
-                            temp[2] = mas[1][1][0]['param'][k]
-                            strings[mas[1][1][0]['number']] = '='.join(temp)
-                        else:
-                            strings[mas[1][1][0]['number']] = temp[0] + '='
-                    for j in range(numbFl):
-                        if i&(0b1 << j):
-                            temp = strings[mas[1][0][j]['number']].split('=',1)
-                            temp[1] += mas[1][0][j]['param'] + ' '
-                            strings[mas[1][0][j]['number']] = '='.join(temp)
-                    self.gridElementOfInput[self.numb-1][3].clear()
-                    for i in strings:
-                        self.gridElementOfInput[self.numb-1][3].append(i.strip())
-            for i in range(len(self.gridElementOfInput[self.curInd])):
-                self.gridElementOfInput[self.curInd][i].setEnabled(False)
-                self.lay.itemAtPosition(self.curInd,i).widget().hide()
+            if self.actionExhaustive_search.text() == self.tr("Exhaustive search +"):
+                self.fillParamLineEdit_ExhaustiveSearch(mas)
+            else:
+                self.fillParamLineEdit_Genetic(mas)
+
+    def genetic_exec(self, new_str, ind_str,mst):
+        self.buttonClicked_addModule()
+        self.gridElementOfInput[self.numb-1][1].setText(self.gridElementOfInput[self.curInd][1].text())
+        self.gridElementOfInput[self.numb-1][4].setText(self.gridElementOfInput[self.curInd][4].text())
+        strings = self.gridElementOfInput[self.curInd][3].toPlainText().split('\n')
+        strings[ind_str] = strings[ind_str].split('=',1)[0]+' = '+new_str
+        self.gridElementOfInput[self.numb-1][3].clear()
+        for i in strings:
+            self.gridElementOfInput[self.numb-1][3].append(i.strip())
+        another_mas = self.module_run_inter(self.numb-1,mst[1],mst[2],mst[3],mst[4],mst[5],mst[6],mst[7])
+        return self.numb-1,another_mas
 
     def buttonClicked_addModule(self):
         self.gridElementOfInput.append([QLabel(str(self.numb)), QLineEdit(),
@@ -691,11 +740,11 @@ class Param(Ui_Form_param, QObject):
                     else:
                         k += 1
                 for j in tempL:
-                    combination.append({'number':i,'param':j})
+                    combination.append({'number':i, 'param':j})
                     combinationIndex.append(i)
         if len(combination) > 0 or len(search_one_by_one) > 0:
-            self.outMas.append(['someone want a combination',combinationIndex])
-            self.outMas.append([combination,search_one_by_one])
+            self.outMas.append(['someone want a combination', combinationIndex])
+            self.outMas.append([combination, search_one_by_one])
         else:
             self.outMas.append(['',])
             self.outMas.append(list())
