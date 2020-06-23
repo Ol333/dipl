@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import webbrowser
+import asyncio
+import threading
 
 from PyQt5.QtWidgets import (QWidget, QPushButton, QLineEdit, QCheckBox,
 QGridLayout, QInputDialog, QApplication, QMessageBox, QTextEdit, QRadioButton,
@@ -20,6 +22,7 @@ from param import Ui_Form_param
 import rab_with_db
 import logic as lgc
 from genetic import Genetic
+import bot
 
 class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
     numb = 0
@@ -32,6 +35,15 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
     curInd = None
     url_report = None
     ga = None
+    cur_mod = ""
+    cur_er_count = 0
+    time_of_begin = datetime.now()
+    bot_com = pyqtSignal()
+    exec_mode = 0
+    stop_fl = False
+    sum_good = 0
+    sum_good_i = 0
+    sum_er_i = []
 
     def __init__(self, form1, com, form2, ui, transl, app):
         super().__init__()
@@ -79,7 +91,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                 path = QFileDialog.getExistingDirectory(self.form,
                     self.tr('Choose directory of project (press Enter)'), self.base_addr)
                 if path:
-                    self.label_6.setText(self.tr(f"Project name: {text1}"))
+                    self.label_5.setText(text1)
                     # for somethinf in path add modules
 
     def delete_and_create_db_tables(self): # only for development
@@ -152,7 +164,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
             temp = self.treeView.selectionModel().model()
             proj_name = str(temp.data(self.treeView.selectedIndexes()[1]))
             out = lgc.get_safe_proj(self.rwd.select_proj_by_name(proj_name)[0],self.rwd)
-            self.label_6.setText(self.tr("Project name: ")+proj_name)
+            self.label_5.setText(proj_name)
             for i in range(len(out)):
                 if i>=len(self.gridElementOfInput):
                     self.buttonClicked_addModule()
@@ -216,6 +228,24 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         self.actionExhaustive_search.setText(self.tr("Exhaustive search"))
         self.actionGenetic.setText(self.tr("Genetic +"))
 
+    def error_ignore_mode(self):
+        self.actionError_ignore_mode.setText(self.tr("Error ignore +"))
+        self.actionFirst_error_stop.setText(self.tr("First error stop"))
+        self.actionModule_skipping_on_first_error.setText(self.tr("Module skipping on first error"))
+        self.exec_mode = 0
+
+    def first_error_stop(self):
+        self.actionError_ignore_mode.setText(self.tr("Error ignore"))
+        self.actionFirst_error_stop.setText(self.tr("First error stop +"))
+        self.actionModule_skipping_on_first_error.setText(self.tr("Module skipping on first error"))
+        self.exec_mode = 1
+
+    def module_skipping_on_first_error(self):
+        self.actionError_ignore_mode.setText(self.tr("Error ignore"))
+        self.actionFirst_error_stop.setText(self.tr("First error stop"))
+        self.actionModule_skipping_on_first_error.setText(self.tr("Module skipping on first error +"))
+        self.exec_mode = 2
+
     def connect_slots(self):
         self.pushButton.clicked.connect(self.execute)
         self.pushButton_2.clicked.connect(self.buttonClicked_addModule)
@@ -232,6 +262,11 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         self.pushButton_8.clicked.connect(self.open_diagram)
         self.actionExhaustive_search.triggered.connect(self.set_exhaustive_search)
         self.actionGenetic.triggered.connect(self.set_genetic)
+        # self.bot_com.connect(self.send_mes_to_bot)
+        self.actionError_ignore_mode.triggered.connect(self.error_ignore_mode)
+        self.actionFirst_error_stop.triggered.connect(self.first_error_stop)
+        self.actionModule_skipping_on_first_error.triggered.connect(self.module_skipping_on_first_error)
+        self.pushButton_10.clicked.connect(self.stop_project)
 
     def set_and_safe_one_modul_params(self,i,file_name,path):
         # изменить док
@@ -276,29 +311,41 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         temp_txt = list(map(lambda x: "> "+x+'  \n',temp_txt))
         re += '\n' + ''.join(temp_txt) + '\n'
         for j in range(int(self.gridElementOfInput[i][4].text())):
-            try:
-                loc_re = ""
-                some_str = subprocess.check_output(['make','-f','temporary_new_file'],
-                                                    stderr=subprocess.STDOUT)
-                some_str = some_str.decode()
-                loc_re += some_str
-                start_time = datetime.now()
-                some_str = subprocess.check_output("./" + module_name,
-                                                    stderr=subprocess.STDOUT)
-                t = datetime.now()-start_time
-                self.moduleInfo.test_time_values(i,j,t)
-                some_str = some_str.decode()
-                loc_re += some_str
-                temp_mas = loc_re.split('\n')
-                for k in range(len(temp_mas)):
-                    temp_mas[k] = ' ' + ("\\" if temp_mas[k].startswith("#") else "") + temp_mas[k]+"  "
-                re += "\n"+ "   " +self.tr("Launch") +" №"+  str(j)+"  \n"+'\n'.join(temp_mas)+ '\n'
-                temp_s = ('№'+str(j)+self.tr(' launch completed successfully. ')
-                          + self.tr('Program execution time: ') + str(t))
-                self.textEdit.append(temp_s)
-                sum_t += t
-            except Exception as e:
-                self.textEdit.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
+            if not self.stop_fl:
+                try:
+                    loc_re = ""
+                    some_str = subprocess.check_output(['make','-f','temporary_new_file'],
+                                                        stderr=subprocess.STDOUT)
+                    some_str = some_str.decode()
+                    loc_re += some_str
+                    start_time = datetime.now()
+                    some_str = subprocess.check_output("./" + module_name,
+                                                        stderr=subprocess.STDOUT)
+                    t = datetime.now()-start_time
+                    self.moduleInfo.test_time_values(i,j,t)
+                    some_str = some_str.decode()
+                    loc_re += some_str
+                    temp_mas = loc_re.split('\n')
+                    for k in range(len(temp_mas)):
+                        temp_mas[k] = ' ' + ("\\" if temp_mas[k].startswith("#") else "") + temp_mas[k]+"  "
+                    re += "\n"+ "   " +self.tr("Launch") +" №"+  str(j)+"  \n"+'\n'.join(temp_mas)+ '\n'
+                    temp_s = ('№'+str(j)+self.tr(' launch completed successfully. ')
+                              + self.tr('Program execution time: ') + str(t))
+                    self.textEdit.append(temp_s)
+                    sum_t += t
+                    self.sum_good_i += 1
+                except Exception as e:
+                    self.textEdit.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
+                    self.sum_er_i.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
+                    if self.exec_mode == 1:
+                        d = QMessageBox.question(self.form, self.tr("Error"),
+                                                self.tr("Do you want continue project?"),
+                                                QMessageBox.Yes|QMessageBox.No,
+                                                QMessageBox.No)
+                        if d == QMessageBox.No:
+                            self.stop_project()
+                    elif self.exec_mode == 2:
+                        break
         os.remove('temporary_new_file')
         return (res_list,re,sum_t,out_path)
 
@@ -311,27 +358,39 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         temp_txt = list(map(lambda x: "> "+x+'  \n',temp_txt))
         re += '\n' + ''.join(temp_txt) + '\n'
         for j in range(int(self.gridElementOfInput[i][4].text())):
-            try:
-                loc_re = ""
-                ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
-                start_time = datetime.now()
-                loc_re += str(subprocess.run(ar))
-                t = datetime.now()-start_time
-                self.moduleInfo.test_time_values(i,j,t)
-                # some_str = subprocess.check_output(ar,stderr=subprocess.STDOUT)
-                # some_str = some_str.decode()
-                # print(some_str,"@@@@@")
-                # loc_re += some_str+"\n"
-                temp_mas = loc_re.split('\n')
-                for k in range(len(temp_mas)):
-                    temp_mas[k] = ' ' + ("\\" if temp_mas[k].startswith("#") else "") + temp_mas[k]+"  "
-                re += "\n"+ "   " +self.tr("Launch") +" №"+  str(j)+"  \n"+'\n'.join(temp_mas)+ '\n'
-                temp_s = ('№'+str(j) + self.tr(' launch completed successfully. ')
-                          + self.tr('Program execution time: ') + str(t))
-                self.textEdit.append(temp_s)
-                sum_t += t
-            except Exception as e:
-                self.textEdit.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
+            if not self.stop_fl:
+                try:
+                    loc_re = ""
+                    ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
+                    start_time = datetime.now()
+                    loc_re += str(subprocess.run(ar))
+                    t = datetime.now()-start_time
+                    self.moduleInfo.test_time_values(i,j,t)
+                    # some_str = subprocess.check_output(ar,stderr=subprocess.STDOUT)
+                    # some_str = some_str.decode()
+                    # print(some_str,"@@@@@")
+                    # loc_re += some_str+"\n"
+                    temp_mas = loc_re.split('\n')
+                    for k in range(len(temp_mas)):
+                        temp_mas[k] = ' ' + ("\\" if temp_mas[k].startswith("#") else "") + temp_mas[k]+"  "
+                    re += "\n"+ "   " +self.tr("Launch") +" №"+  str(j)+"  \n"+'\n'.join(temp_mas)+ '\n'
+                    temp_s = ('№'+str(j) + self.tr(' launch completed successfully. ')
+                              + self.tr('Program execution time: ') + str(t))
+                    self.textEdit.append(temp_s)
+                    sum_t += t
+                    self.sum_good_i += 1
+                except Exception as e:
+                    self.textEdit.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
+                    self.sum_er_i.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
+                    if self.exec_mode == 1:
+                        d = QMessageBox.question(self.form, self.tr("Error"),
+                                                self.tr("Do you want continue project?"),
+                                                QMessageBox.Yes|QMessageBox.No,
+                                                QMessageBox.No)
+                        if d == QMessageBox.No:
+                            self.stop_project()
+                    elif self.exec_mode == 2:
+                        break
         os.remove('temporary_new_file')
         return (res_list,re,sum_t,out_path)
 
@@ -343,29 +402,44 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         temp_txt = list(map(lambda x: "> "+x+'  \n',temp_txt))
         re += '\n' + ''.join(temp_txt) + '\n'
         for j in range(int(self.gridElementOfInput[i][4].text())):
-            try:
-                loc_re = ""
-                ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
-                start_time = datetime.now()
-                loc_re += str(subprocess.run(ar))
-                t = datetime.now()-start_time
-                self.moduleInfo.test_time_values(i,j,t)
-                ar.extend(self.gridElementOfInput[i][3].toPlainText().split(' '))
-                temp_mas = loc_re.split('\n')
-                for k in range(len(temp_mas)):
-                    temp_mas[k] = ' ' + ("\\" if temp_mas[k].startswith("#") else "") + temp_mas[k]+"  "
-                re += "\n"+ "   " +self.tr("Launch") +" №"+  str(j)+"  \n"+'\n'.join(temp_mas)+ '\n'
-                temp_s = ('№'+str(j)+self.tr(' launch completed successfully. ')
-                          + self.tr('Program execution time: ') + str(t))
-                self.textEdit.append(temp_s)
-                sum_t += t
-            except Exception as e:
-                self.textEdit.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
+            if not self.stop_fl:
+                try:
+                    loc_re = ""
+                    ar = ['python3',self.gridElementOfInput[i][1].text()+'.py']
+                    start_time = datetime.now()
+                    loc_re += str(subprocess.run(ar))
+                    t = datetime.now()-start_time
+                    self.moduleInfo.test_time_values(i,j,t)
+                    ar.extend(self.gridElementOfInput[i][3].toPlainText().split(' '))
+                    temp_mas = loc_re.split('\n')
+                    for k in range(len(temp_mas)):
+                        temp_mas[k] = ' ' + ("\\" if temp_mas[k].startswith("#") else "") + temp_mas[k]+"  "
+                    re += "\n"+ "   " +self.tr("Launch") +" №"+  str(j)+"  \n"+'\n'.join(temp_mas)+ '\n'
+                    temp_s = ('№'+str(j)+self.tr(' launch completed successfully. ')
+                              + self.tr('Program execution time: ') + str(t))
+                    self.textEdit.append(temp_s)
+                    sum_t += t
+                    self.sum_good_i += 1
+                except Exception as e:
+                    self.textEdit.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
+                    self.sum_er_i.append('№'+str(j)+self.tr(' launch. Error: ')+str(e))
+                    if self.exec_mode == 1:
+                        d = QMessageBox.question(self.form, self.tr("Error"),
+                                                self.tr("Do you want continue project?"),
+                                                QMessageBox.Yes|QMessageBox.No,
+                                                QMessageBox.No)
+                        if d == QMessageBox.No:
+                            self.stop_project()
+                    elif self.exec_mode == 2:
+                        break
         return (res_list,re,sum_t,"")
 
     def module_run_inter(self,i,set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs):
         sum_t_i = timedelta()
+        self.sum_er_i.clear()
+        self.sum_good_i = 0
         module_name = self.gridElementOfInput[i][1].text().split('/')[-1]
+        self.cur_mod = module_name + ' №' + str(i)
         set_of_modules.add(module_name)
         self.textEdit.append('<i>'+self.tr('Module ')+str(i)+'.'
                             +module_name+self.tr(' is begin ')
@@ -399,16 +473,10 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
 
         temp_txt = self.textEdit.toPlainText().split('\n')
         temp_txt = list(map(lambda x: x.strip(),temp_txt))
-        sum_er_i = []
-        for s in temp_txt[-int(self.gridElementOfInput[i][4].text())-1:-1]:
-            if s.find("Error") != -1 or s.find("Ошибка") != -1:
-                sum_er_i.append(s)
-                er_fl = True
         self.textEdit.append('<i>'+self.tr('Total module lead time : ')
                             +str(sum_t_i)
                             +self.tr('. Successfully completed launchs: ')
-                            +'<b>'
-                            +str(int(self.gridElementOfInput[i][4].text())-len(sum_er_i))
+                            +'<b>'+str(self.sum_good_i)
                             +'/'+self.gridElementOfInput[i][4].text()
                             +'</b></i>')
         self.progressBar.setValue(((self.progressBar.value()
@@ -416,14 +484,25 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                     + int(self.gridElementOfInput[i][4].text()))
                                                    /count_of_execs)*100)
         sum_t += sum_t_i
-        sum_er.append(list(map(lambda x:'№'+str(i)+self.tr(' module ')+x,sum_er_i)))
+        if self.sum_good_i == int(self.gridElementOfInput[i][4].text()):
+            self.sum_good += 1
+        sum_er.append(list(map(lambda x:'№'+str(i)+self.tr(' module ')+x,self.sum_er_i)))
+        self.cur_er_count += len(self.sum_er_i)
+        # self.bot_com.emit()
         return set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs,module_name
 
     def execute(self):
-        while self.label_6.text() == self.tr("Project name: ...---..."):
+        while self.label_5.text() == "...---...":
             self.showDialog_createProject()
         self.textEdit.clear()
-        proj_name = self.label_6.text().split(":")[1].strip()
+        self.cur_er_count = 0
+
+        self.thread = bot.BotThread(self)
+        self.thread.start()
+        # thread.join()
+
+        self.time_of_begin = datetime.now()
+        proj_name = self.label_5.text()
         self.tabWidget.setCurrentIndex(0) #выполняет спустя итерацию
         modules_paramValueRes = []
         re = '## <center>' + self.tr("Project ") + proj_name + '</center>'
@@ -441,18 +520,20 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
               +self.tr(" is begin ")+datetime.now().strftime("%H:%M:%S")+'</b>')
 
         if self.actionGenetic.text() == self.tr("Genetic +"):
-            mod_numb_launch = int(self.gridElementOfInput[self.curInd][4].text())
-            for i in range(len(self.gridElementOfInput[self.curInd])):
-                self.gridElementOfInput[self.curInd][i].setEnabled(False)
-                self.lay.itemAtPosition(self.curInd,i).widget().hide()
+            if not (er_fl and exec_mode == 1):
+                mod_numb_launch = int(self.gridElementOfInput[self.curInd][4].text())
+                for i in range(len(self.gridElementOfInput[self.curInd])):
+                    self.gridElementOfInput[self.curInd][i].setEnabled(False)
+                    self.lay.itemAtPosition(self.curInd,i).widget().hide()
 
-            count_of_modules = 40
-            all_launch = count_of_modules * mod_numb_launch
-            set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs,module_name = self.ga.run_algorithm([0,set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,all_launch])
+                count_of_modules = 16
+                all_launch = count_of_modules * mod_numb_launch
+                set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs,module_name = self.ga.run_algorithm([0,set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,all_launch])
         else:
             for i in range(len(self.gridElementOfInput)):
-                if self.gridElementOfInput[i][2].isEnabled():
-                    set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs,module_name = self.module_run_inter(i,set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs)
+                if not (er_fl and self.exec_mode == 1):
+                    if self.gridElementOfInput[i][2].isEnabled():
+                        set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs,module_name = self.module_run_inter(i,set_of_modules,modules_paramValueRes,re,er_fl,sum_er,sum_t,count_of_execs)
         re += self.timeResult.modules_res()
         list_of_flags = self.timeResult.list_flags_name(module_name, None)
         # list_of_flags = self.timeResult.list_flags_name(module_name, 32)
@@ -464,7 +545,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                             +datetime.now().strftime("%H:%M:%S")+'</b>')
         self.textEdit.append(self.tr('Total project lead time : ')+str(sum_t)
                             +self.tr('. Successfully completed modules: ')+'<b>'
-                            +str(count_of_modules-(sum(len(x) for x in sum_er)))+'/'
+                            +str(self.sum_good)+'/'
                             +str(count_of_modules)+'</b>')
         if er_fl:
             self.textEdit.append(self.tr('Errors: '))
@@ -500,6 +581,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         subprocess.run(['grip',rep_short_nam+".md",'--export',rep_short_nam+".html","--quiet"])#--title=<title>
         self.url_report = report_name+".html"
         self.pushButton_8.setEnabled(True)
+        self.pushButton_10.setEnabled(False)
         temp_proj_list = [proj_name,self.base_addr,report_name+".html"]
         temp_proj_list.extend(mas_im_adr)
         # db project modules parametres values results(-)
@@ -706,6 +788,25 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                                       QStandardItem(), QStandardItem(),QStandardItem()])
                 parent = old_parent_mod
             parent = old_parent_pr
+
+    def get_bot_info(self):
+        mas = []
+        if self.textEdit.toPlainText() == "" or self.pushButton_8.isEnabled():
+            mas.append(None)
+            mas.append(timedelta())
+        else:
+            mas.append(datetime.now() - self.time_of_begin)
+            mas.append(self.label_5.text())
+        mas.append(self.cur_mod)
+        mas.append(self.cur_er_count)
+        return mas
+
+    def send_mes_to_bot(self):
+        # self.thread.periodic(self.cur_mod)
+        pass
+
+    def stop_project(self):
+        self.stop_fl = True
 
 class Param(Ui_Form_param, QObject):
     def __init__(self, form, com):

@@ -275,6 +275,8 @@ def diagram(count_of_modules,timeResult,module_name):
     plt.title('Среднее время выполнения программы')
     ax = plt.axes()
     ax.xaxis.grid(True, zorder = 1)
+    ax.set_xlabel('время (с)')
+    ax.set_ylabel('набор параметров (№)')
     tempN = count_of_modules
     # tempN = 32
     col_vo_const_fl = timeResult.col_vo_const_fl(module_name,tempN)

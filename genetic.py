@@ -23,8 +23,8 @@ class Genetic():
                 mas_param.remove(mas_param[k])
             else:
                 k += 1
-        self.ga = GeneticAlgorithm(mas_param, population_size=4, generations=10,
-                           crossover_probability=0.8, mutation_probability=0.05,
+        self.ga = GeneticAlgorithm(mas_param, population_size=4, generations=4,
+                           crossover_probability=1.0, mutation_probability=0.4,
                            elitism=True, maximise_fitness=True)
         self.ga.create_individual = self.create_individual
         self.ga.crossover_function = self.crossover
@@ -57,9 +57,9 @@ class Genetic():
             if selected:
                 mas_param_for_launch.append(flag)
 
-        # print(mas_param_for_launch)
-        # print(individual)
-        # print("#####")
+        print(mas_param_for_launch)
+        print(individual)
+        print("#####")
         mod_ind,self.another_mas = self.exec.genetic_exec(' '.join(mas_param_for_launch),self.ind,self.mas_some_things)
         self.mas_some_things[0] = mod_ind
         for i in range(len(self.mas_some_things)-1):
@@ -68,7 +68,7 @@ class Genetic():
         module_index = self.mas_some_things[0]
         aver_time = self.exec.moduleInfo.aver_time(module_index,
             int(self.exec.gridElementOfInput[module_index][4].text()))
-        fitness = aver_time.total_seconds() # среднее время исполнения модуля
+        fitness = -aver_time.total_seconds() # среднее время исполнения модуля
         return fitness
 
     def run_algorithm(self,mas_some_things):
