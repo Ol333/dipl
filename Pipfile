@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+numpy = "*"
+pyeasyga = "*"
+numexpr = "*"
+aiogram = "*"
+matplotlib = "*"
+sympy = "*"
+pyqt5 = "*"
+psycopg2-binary = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"

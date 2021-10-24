@@ -1,7 +1,0 @@
-numpy==1.16.2
-pyeasyga==0.3.1
-numexpr==2.6.9
-matplotlib==3.0.2
-psycopg2==2.8.5
-PyQt5==5.15.0
-sympy==1.6
