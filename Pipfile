@@ -12,6 +12,7 @@ matplotlib = "*"
 sympy = "*"
 pyqt5 = "*"
 psycopg2-binary = "*"
+grip = "*"
 
 [dev-packages]
 

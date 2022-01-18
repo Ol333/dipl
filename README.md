@@ -21,7 +21,7 @@
 
 4. Создание базы данных.
 
-> create datavase dipl_db;                 
+> create database dipl_db;                 
 
 (можно задать другие названия/пароль и изменить файл postgres_settings.txt)
 
