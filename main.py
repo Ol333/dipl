@@ -45,6 +45,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
     sum_good = 0
     sum_good_i = 0
     sum_er_i = []
+    temp_list_for_relative_error = [] #delete after using
 
     def __init__(self, form1, com, form2, ui, transl, app):
         super().__init__()
@@ -315,6 +316,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
         mas, out_path = (
             self.set_and_safe_one_modul_params(i, "makefile", path))
         res_list.extend(mas)
+        self.temp_list_for_relative_error.append([])
         # запустить
         re = "\n" + "### " + self.tr("Module") + " №" + str(i)
         temp_txt = self.gridElementOfInput[i][3].toPlainText().split('\n')
@@ -333,6 +335,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                                                        stderr=subprocess.STDOUT)
                     t = datetime.now()-start_time
                     self.moduleInfo.test_time_values(i, j, t)
+                    self.temp_list_for_relative_error[-1].append(t)
                     some_str = some_str.decode()
                     loc_re += some_str
                     temp_mas = loc_re.split('\n')
@@ -363,6 +366,19 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                     elif self.exec_mode == 2:
                         break
         os.remove('temporary_new_file')
+        temp_n = len(self.temp_list_for_relative_error[-1])
+        sum_t_for_avr = 0
+        for j in range(temp_n):
+            sum_t_for_avr += self.temp_list_for_relative_error[-1][j].microseconds
+        avr_t = sum_t_for_avr/temp_n
+        temp_sum = 0
+        for j in range(temp_n):
+            temp_sum += ((avr_t - self.temp_list_for_relative_error[-1][j].microseconds))**2
+        temp_sum = temp_sum / (temp_n*(temp_n-1))
+        temp_sum = temp_sum**(0.5)
+        temp_sum *= 1.96
+        temp_sum = (temp_sum/avr_t)*100
+        print(str(i)+'. '+str(avr_t)+' +/- '+str(temp_sum)+'%')
         return (res_list, re, sum_t, out_path)
 
     def execute_with_parameters(self, i, path, module_name, sum_t):
@@ -513,10 +529,10 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                              + '<b>'+str(self.sum_good_i)
                              + '/'+self.gridElementOfInput[i][4].text()
                              + '</b></i>')
-        self.progressBar.setValue(((self.progressBar.value()
+        self.progressBar.setValue(int(((self.progressBar.value()
                                     / 100*count_of_execs
                                     + int(self.gridElementOfInput[i][4].text()))
-                                   / count_of_execs)*100)
+                                   / count_of_execs)*100))
         sum_t += sum_t_i
         if self.sum_good_i == int(self.gridElementOfInput[i][4].text()):
             self.sum_good += 1
@@ -617,7 +633,7 @@ class Example(Ui_MainWindow, QObject, Ui_Form_param, object):
                 + '\n'.join(list(map(lambda x: x+'  ', self.textEdit.toPlainText().split('\n')))))
         f.close()
         subprocess.run(['grip', rep_short_nam+".md", '--export',
-                       rep_short_nam+".html", "--quiet"])  # --title=<title>
+                       rep_short_nam+".html", "--quiet", "--user","Ol333","--pass","q1a2x3c4v5"])  # --title=<title>
         self.url_report = report_name+".html"
         self.pushButton_8.setEnabled(True)
         self.pushButton_10.setEnabled(False)
